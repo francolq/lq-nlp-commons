@@ -1,7 +1,4 @@
-#!/usr/bin/python
-
-# Basado en rbranch.py
-# Calculo de precision y recall para el baseline LBRANCH
+# lbranch.py: LBRANCH baseline for unsupervised parsing.
 
 import bracketing, model
 

@@ -1,4 +1,4 @@
-# rbranch.py: RBRANCH baseline for unsupervised parsing.
+# rbranch.py: RBRANCH baseline for unsupervised parsing.
 
 import bracketing, model
 
