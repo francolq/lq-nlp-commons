@@ -15,13 +15,11 @@ class Tree(tree.Tree):
         tree.Tree.__init__(self, nltk_tree.node, nltk_tree)
         self.labels = labels
     
-    
     def copy(self, deep=False):
         if not deep:
             return self.__class__(self, self.labels)
         else:
             return self.__class__(tree.Tree.convert(self), self.labels)
-    
     
     def map_nodes(self, f):
         lpos = self.treepositions()
@@ -31,12 +29,10 @@ class Tree(tree.Tree):
             else:
                 self[pos] = f(self[pos])
     
-    
     def map_leaves(self, f):
         lpos = self.treepositions('leaves')
         for pos in lpos:
             self[pos] = f(self[pos])
-    
     
     def filter_subtrees(self, f):
         def recursion(t, f):
@@ -57,14 +53,11 @@ class Tree(tree.Tree):
         else:
             self.__init__(tree.Tree(t, []), self.labels)
     
-    
     def remove_functions(self):
         self.map_nodes(lambda node: node.split('-')[0])
     
-    
     def remove_leaves(self):
         self.filter_subtrees(lambda t: isinstance(t, tree.Tree))
-    
     
     """def filter_tags(self, valid_tags):
         def f(t):
@@ -77,10 +70,11 @@ class Tree(tree.Tree):
                 return (t in valid_tags)
         self.filter_subtrees(f)"""
     
-    # XXX: esta funcion estaria mejor llamada filter_leaves ya que solo filtra tags
-    # si estos estan en las hojas...
-    # tag_filter debe ser una funcion de strings en bools
+    # XXX: esta funcion estaria mejor llamada filter_leaves ya que solo filtra
+    # tags si estos estan en las hojas...
     def filter_tags(self, tag_filter):
+        """tag_filter must be a predicate function over strings.
+        """
         def f(t):
             if isinstance(t, tree.Tree):
                 all_invalid = True
@@ -90,7 +84,6 @@ class Tree(tree.Tree):
             else:
                 return tag_filter(t)
         self.filter_subtrees(f)
-    
     
     def remove_punctuation(self):
         def f(t):
@@ -103,11 +96,10 @@ class Tree(tree.Tree):
                 return not self.is_punctuation(t)
         self.filter_subtrees(f)
     
-    
-    # Para hacer overriding en las subclases:
     def is_punctuation(self, s):
+        """To be overriden in the subclasses.
+        """
         return False
-    
     
     def remove_ellipsis(self):
         def f(t):
@@ -120,10 +112,10 @@ class Tree(tree.Tree):
                 return not self.is_ellipsis(t)
         self.filter_subtrees(f)
     
-    
     def is_ellipsis(self, s):
+        """To be overriden in the subclasses.
+        """
         return False
-    
     
     # DEPRECATED: creo que nunca uso esta bosta, aunque podria:
     # Invocar solo sobre arboles que tengan la frase en sus hojas.
@@ -133,7 +125,6 @@ class Tree(tree.Tree):
         t2 = self.copy()
         t2.remove_leaves()
         return len(filter(lambda t: t in self.valid_tags, t2.leaves()))
-    
     
     def dfs(self):
         queue = self.treepositions()
@@ -147,7 +138,6 @@ class Tree(tree.Tree):
                 q = queue.pop(0)
                 stack.append(q)
                 print p, "yendo"
-    
     
     def labelled_spannings(self, leaves=True, root=True, unary=True):
         queue = self.treepositions()
@@ -176,9 +166,9 @@ class Tree(tree.Tree):
             result = filter(lambda (l, (i, j)): i != j-1, result)
         return result
     
-    
-    # Devuelve el conjunto de spannings sin labels.
     def spannings(self, leaves=True, root=True, unary=True):
+        """Returns the set of unlabeled spannings.
+        """
         queue = self.treepositions()
         stack = [(queue.pop(0),0)]
         j = 0
@@ -256,8 +246,9 @@ def labelled_measures(gold, parse):
             }
 
 
-# Medidas sin label:
 def bracketed_measures(gold, parse):
+    """Unlabeled measures.
+    """
     gold_spans = gold.spannings(leaves=False)
     parse_spans = parse.spannings(leaves=False)
     
@@ -337,31 +328,24 @@ class Treebank:
     
     def __init__(self, trees):
         self.trees = trees
-    
-    
+   
     def save(self, filename):
         util.save_obj(self, filename)
-    
     
     def get_trees(self):
         return self.trees
     
-    
     def sent(self, i):
         return self.trees[i].leaves()
     
-    
     def remove_functions(self):
         map(lambda t: t.remove_functions(), self.trees)
-    
-    
+   
     def remove_leaves(self):
         map(lambda t: t.remove_leaves(), self.trees)
     
-    
     def length_sort(self):
         self.trees.sort(lambda x,y: cmp(len(x.leaves()), len(y.leaves())))
-    
     
     def stats(self, filename=None):
         trees = self.trees
@@ -383,14 +367,16 @@ class Treebank:
         avg_length = float(words) / len(trees)
         return (len(trees), avg_height, avg_length)
     
-    
     def print_stats(self, filename=None):
         (size, height, length) = self.stats(filename)
-        print "Pares arbol oracion:", size
-        print "Altura de arbol promedio:", height
-        print "Largo de oracion promedio:", length
-        print "Vocabulario:", len(self.get_vocabulary())
-    
+        #print "Pares arbol oracion:", size
+        #print "Altura de arbol promedio:", height
+        #print "Largo de oracion promedio:", length
+        #print "Vocabulario:", len(self.get_vocabulary())
+        print "Trees:", size
+        print "Average tree depth:", height
+        print "Average sentence length:", length
+        print "Vocabulary size:", len(self.get_vocabulary())
     
     def get_productions(self):
 #        productions = []
@@ -401,14 +387,13 @@ class Treebank:
         productions = concat([t.productions() for t in self.trees])
         return productions
     
-    
-    # Devuelve el conjunto todos los terminales de todos los arboles.
     def get_vocabulary(self):
+        """Returns the set of terminals of all the trees.
+        """
         result = set()
         for t in self.trees:
             result.update(t.leaves())
         return result
-    
     
     def word_freqs(self):
         d = {}
@@ -421,7 +406,6 @@ class Treebank:
                     d[w] = 1
         return d
     
-    
     def length_freqs(self):
         d = {}
         for t in self.trees:
@@ -432,15 +416,28 @@ class Treebank:
                 d[l] = 1
         return d
     
-    
-    # Para hacer overriding en las subclases:
     def is_punctuation(self, s):
+        """To be overriden in the subclasses.
+        """
         return False
     
-    
-    # Para hacer overriding en las subclases:
     def is_ellipsis(self, s):
+        """To be overriden in the subclasses.
+        """
         return False
+    
+    def find_sent(self, ss):
+        """Returns the indexes of the sentences that contains the 
+        sequence of words ss.
+        """
+        ss = ' '.join(ss)
+        l = []
+        for i in range(len(self.trees)):
+            s = self.sent(i)
+            s = ' '.join(s)
+            if ss in s:
+                l.append(i)
+        return l
 
 
 EMPTY = Treebank([])
@@ -452,12 +449,10 @@ def load_treebank(filename):
 
 class SavedTreebank(Treebank):
     trees = []
-    
-    
+   
     def __init__(self, filename, basedir):
         self.filename = filename
         self.basedir = basedir
-    
     
     def get_trees(self):
         if self.trees == []:
@@ -468,17 +463,15 @@ class SavedTreebank(Treebank):
             self.trees = trees
         return self.trees
     
-    
     def _generate_trees(self):
         print "Parsing treebank..."
         trees = [self._prepare(t) for t in self.parsed()]
         return trees
     
-    
-    # para ser reemplazado en las subclases:
     def _prepare(self, t):
+        """To be overriden in the subclasses.
+        """
         return t
-    
     
     def parsed(self, files=None):
         """
