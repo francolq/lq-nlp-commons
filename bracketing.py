@@ -1,3 +1,7 @@
+# Copyright (C) 2007-2008 Franco M. Luque
+# URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
+# For license information, see LICENSE.txt
+
 # bracketing.py: Bracketing data structure.
 
 import itertools
