@@ -120,7 +120,7 @@ class Bracketing:
         b2 = set(map(lambda (a, b): (a-self.start_index, b-self.start_index), self.brackets))
         return treefy(s, b2)
     
-    def srfy(self, s, whole=False):
+    def strfy(self, s, whole=False):
         """Returns a string representation of the bracketing, using
         s as the bracketed sentence (e.g. 'DT (VB NN)').
         """
