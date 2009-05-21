@@ -1,11 +1,10 @@
-# Copyright (C) 2007-2008 Franco M. Luque
+# Copyright (C) 2007-2009 Franco M. Luque
 # URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
 # For license information, see LICENSE.txt
 
-import cast3lb
-
 import itertools
 
+import cast3lb
 
 class Cast3LBn(cast3lb.Cast3LB):
     

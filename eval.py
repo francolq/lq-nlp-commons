@@ -1,10 +1,10 @@
-# Copyright (C) 2007-2008 Franco M. Luque
+# Copyright (C) 2007-2009 Franco M. Luque
 # URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
 # For license information, see LICENSE.txt
 
-import bracketing
-
 from itertools import izip
+
+import bracketing
 
 count_fullspan_bracket = True
 count_length_2 = True

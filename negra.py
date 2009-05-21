@@ -1,12 +1,12 @@
-# Copyright (C) 2007-2008 Franco M. Luque
+# Copyright (C) 2007-2009 Franco M. Luque
 # URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
 # For license information, see LICENSE.txt
 
-import treebank
+import itertools
 
 from nltk.corpus.reader.bracket_parse import BracketParseCorpusReader
 
-import itertools
+import treebank
 
 
 def is_ellipsis(s):

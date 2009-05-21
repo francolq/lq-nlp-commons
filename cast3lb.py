@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2008 Franco M. Luque
+# Copyright (C) 2007-2009 Franco M. Luque
 # URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
 # For license information, see LICENSE.txt
 
@@ -15,12 +15,11 @@
 
 # from nltk_lite.corpora import get_basedir
 
-import treebank, util
+import itertools
 
 from nltk import tree
-from nltk.draw import draw_trees
-import os, itertools
 
+import treebank
 
 # Funciona para el Cast3LB antes y despues de quitar las hojas, 
 # y antes y despues de eliminar las funciones.
