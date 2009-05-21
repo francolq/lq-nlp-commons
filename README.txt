@@ -13,6 +13,10 @@ Cast3LB corpuses (English, German and Spanish respectively), and some baselines
 and upper bounds computation code for unsupervised parsing (Klein and
 Manning, 2004).
 
+This work was done as part of the PhD in Computer Science I am doing in FaMAF,
+Universidad Nacional de Cordoba, Argentina, under the supervision of
+Gabriel Infante-Lopez, with a research fellowship from CONICET.
+
 No direct usage instructions for now. Only to be used as dependency for other
 software.
 
