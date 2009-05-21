@@ -15,23 +15,18 @@ class Model:
     tested = False
     evaluated = False
     
-    
     def train(self):
         self.trained = True
     
-    
     def parse(self, s):
         return None
-    
     
     def test(self, S):
         self.Parse = [self.parse(s) for s in S]
         self.tested = True
     
-    
     def eval(self):
         self.evaluated = True
-    
     
     Gold = []
     Parse = []
@@ -42,7 +37,6 @@ class BracketingModel(Model):
     count_fullspan_bracket = True
     count_length_2 = True
     count_length_2_1 = False
-    
     
     def __init__(self, treebank=None):
         
@@ -57,16 +51,16 @@ class BracketingModel(Model):
         self.S = S
         self.Gold = Gold
     
-    
     def _get_treebank(self, treebank=None):
         if treebank is None:
             import wsj10
             treebank = wsj10.WSJ10()
         return treebank
     
-    
-    # Calculo de precision, recall y F1 para dos Bracketings:
     def eval(self, output=True, short=False, long=False, max_length=10):
+        """Compute precision, recall and F1 between the parsed bracketings and
+        the gold bracketings.
+        """
         Gold = self.Gold
         
         Prec = 0.0
@@ -100,11 +94,27 @@ class BracketingModel(Model):
         self.evaluated = True
         
         if output and not short:
-            print "Cantidad de arboles:", m
-            print "Medidas sumando todos los brackets:"
+            #print "Cantidad de arboles:", int(m)
+            #print "Medidas sumando todos los brackets:"
+            #print "  Precision: %2.1f" % (100*Prec2)
+            #print "  Recall: %2.1f" % (100*Rec2)
+            #print "  Media harmonica F1: %2.1f" % (100*F12)
+            #if long:
+                #print "Brackets parse:", brackets_parse
+                #print "Brackets gold:", brackets_gold
+                #print "Brackets ok:", brackets_ok
+                #Prec = Prec / m
+                #Rec = Rec / m
+                #F1 = 2*(Prec*Rec)/(Prec+Rec)
+                #print "Medidas promediando p y r por frase:"
+                #print "  Precision: %2.1f" % (100*Prec)
+                #print "  Recall: %2.1f" % (100*Rec)
+                #print "  Media harmonica F1: %2.1f" % (100*F1)
+            print "Sentences:", int(m)
+            print "Micro-averaged measures:"
             print "  Precision: %2.1f" % (100*Prec2)
             print "  Recall: %2.1f" % (100*Rec2)
-            print "  Media harmonica F1: %2.1f" % (100*F12)
+            print "  Harmonic mean F1: %2.1f" % (100*F12)
             if long:
                 print "Brackets parse:", brackets_parse
                 print "Brackets gold:", brackets_gold
@@ -112,15 +122,14 @@ class BracketingModel(Model):
                 Prec = Prec / m
                 Rec = Rec / m
                 F1 = 2*(Prec*Rec)/(Prec+Rec)
-                print "Medidas promediando p y r por frase:"
+                print "Macro-averaged measures:"
                 print "  Precision: %2.1f" % (100*Prec)
                 print "  Recall: %2.1f" % (100*Rec)
-                print "  Media harmonica F1: %2.1f" % (100*F1)
+                print "  Harmonic mean F1: %2.1f" % (100*F1)
         elif output and short:
             print "F1 =", F12
         
         return self.evaluation
-    
     
     # FIXME: no esta bien adaptado para usar count_fullspan_bracket
     # Funcion auxiliar de eval();
@@ -150,7 +159,6 @@ class BracketingModel(Model):
         
         return (prec, rec)
     
-    
     # FIXME: hacer andar con frases de largo 1!
     # devuelve la terna (brackets_ok, brackets_parse, brackets_gold)
     # del i-esimo arbol. Se usa para calcular las medidas 
@@ -163,8 +171,7 @@ class BracketingModel(Model):
             return (n+1, len(p)+1, len(g)+1)
         else:
             return (n, len(p), len(g))
-    
-    
+   
     # FIXME: pegado asi nomas: adaptar esto para usar measures.
     def eval_by_length(self):
         #Prec = {}
