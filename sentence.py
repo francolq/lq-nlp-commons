@@ -49,8 +49,6 @@ class Sentence: # (list):
     # Disabled list operations
     #////////////////////////////////////////////////////////////
     
-    def __mul__(self, v):
-        raise TypeError('Sentence does not support multiplication')
     def __rmul__(self, v):
         raise TypeError('Sentence does not support multiplication')
    
@@ -67,6 +65,8 @@ class Sentence: # (list):
     def __iadd__(self, v):
         self.tag_list += v
         return self
+    def __mul__(self, v):
+        return Sentence(self.tag_list * v)
    
     #////////////////////////////////////////////////////////////
     # Indexing
