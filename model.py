@@ -6,6 +6,7 @@
 # Also a general model for bracketing parsing (class BracketingModel).
 
 import itertools
+import sys
 
 import sentence
 import bracketing
@@ -57,7 +58,31 @@ class BracketingModel(Model):
             treebank = wsj10.WSJ10()
         return treebank
     
-    def eval(self, output=True, short=False, long=False, max_length=10):
+    def test(self, short=False, max_length=None):
+        self.Parse, self.Weight = [], 0.0
+        
+        n = str(len(self.S))
+        m = len(n)
+        o = "%"+str(m)+"d of "+n
+        i = 0
+        print "Parsed", o % i,
+        sys.stdout.flush()
+        o = ("\b"*(2*m+5)) + o
+        for s in self.S:
+            if max_length is None or len(s) <= max_length:
+                (parse, weight) = self.parse(s)
+            else:
+                (parse, weight) = (None, 0.0)
+            self.Parse += [parse]
+            self.Weight += weight
+            
+            i += 1
+            print o % i,
+            sys.stdout.flush()
+        print "\nFinished parsing."
+        self.eval(short=short, max_length=max_length)
+    
+    def eval(self, output=True, short=False, long=False, max_length=None):
         """Compute precision, recall and F1 between the parsed bracketings and
         the gold bracketings.
         """
@@ -73,9 +98,9 @@ class BracketingModel(Model):
         
         for i in range(len(Gold)):
             l = Gold[i].length
-            if l <= max_length and (self.count_length_2_1 or (self.count_length_2 and l == 2) or l >= 3):
+            if (max_length is None or l <= max_length) \
+                    and (self.count_length_2_1 or (self.count_length_2 and l == 2) or l >= 3):
                 (prec, rec) = self.measures(i)
-                
                 Prec += prec
                 Rec += rec
                 
