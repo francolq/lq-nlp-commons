@@ -160,9 +160,12 @@ class BracketingModel(Model):
     # Funcion auxiliar de eval();
     # Precision y recall del i-esimo parse respecto de su gold:
     def measures(self, i):
-        g, p = self.Gold[i].brackets, self.Parse[i].brackets
-        n = float(bracketing.coincidences(self.Gold[i], self.Parse[i]))
-        #n = float(len(g & p))
+        g = self.Gold[i].brackets
+        if self.Parse[i] is None:
+            p, n = set(), 0
+        else:
+            p = self.Parse[i].brackets
+            n = float(bracketing.coincidences(self.Gold[i], self.Parse[i]))
         
         if len(p) > 0:
             if self.count_fullspan_bracket:
@@ -172,6 +175,7 @@ class BracketingModel(Model):
         elif len(g) == 0:
             prec = 1.0
         else:
+            # XXX: no deberia ser 1?
             prec = 0.0
         
         if len(g) > 0:
@@ -189,9 +193,12 @@ class BracketingModel(Model):
     # del i-esimo arbol. Se usa para calcular las medidas 
     # micro-promediadas.
     def measures2(self, i):
-        g, p = self.Gold[i].brackets, self.Parse[i].brackets
-        #n = float(bracketing.coincidences(self.Gold[i], self.Parse[i]))
-        n = bracketing.coincidences(self.Gold[i], self.Parse[i])
+        g = self.Gold[i].brackets
+        if self.Parse[i] is None:
+            p, n = set(), 0
+        else:
+            p = self.Parse[i].brackets
+            n = float(bracketing.coincidences(self.Gold[i], self.Parse[i]))
         if self.count_fullspan_bracket:
             return (n+1, len(p)+1, len(g)+1)
         else:
