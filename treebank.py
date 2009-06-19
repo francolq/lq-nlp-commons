@@ -4,7 +4,6 @@
 
 # -*- coding: iso-8859-1 -*-
 
-import string
 import os
 import itertools
 
@@ -14,6 +13,8 @@ import util
 
 
 class Tree(tree.Tree):
+    def __new__(cls, other_trees):
+        return super(Tree, cls).__new__(cls, other_trees.node, other_trees)
 
     def __init__(self, nltk_tree, labels=None):
         tree.Tree.__init__(self, nltk_tree.node, nltk_tree)
@@ -332,9 +333,6 @@ class Treebank:
     
     def __init__(self, trees):
         self.trees = trees
-   
-    def save(self, filename):
-        util.save_obj(self, filename)
     
     def get_trees(self):
         return self.trees
@@ -453,7 +451,7 @@ def load_treebank(filename):
 
 class SavedTreebank(Treebank):
     trees = []
-   
+    
     def __init__(self, filename, basedir):
         self.filename = filename
         self.basedir = basedir
@@ -466,6 +464,11 @@ class SavedTreebank(Treebank):
                 util.save_obj(trees, self.filename)
             self.trees = trees
         return self.trees
+
+    def save(self, filename=None):
+        if filename is None:
+            filename = self.filename
+        util.save_obj(self.trees, filename)
     
     def _generate_trees(self):
         print "Parsing treebank..."
