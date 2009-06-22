@@ -13,9 +13,12 @@ import util
 
 
 class Tree(tree.Tree):
-    def __new__(cls, other_trees):
-        return super(Tree, cls).__new__(cls, other_trees.node, other_trees)
-
+    def __new__(cls, nltk_tree=None, labels=None):
+        if nltk_tree is None:
+            return super(Tree, cls).__new__(cls)
+        else:
+            return super(Tree, cls).__new__(cls, nltk_tree.node, nltk_tree)
+    
     def __init__(self, nltk_tree, labels=None):
         tree.Tree.__init__(self, nltk_tree.node, nltk_tree)
         self.labels = labels
