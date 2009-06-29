@@ -8,6 +8,7 @@ import os
 import itertools
 
 from nltk import tree
+from nltk.corpus.reader import api
 
 import util
 
@@ -331,21 +332,31 @@ def span_hits_count(gold_spans, parse_spans, labelled=False):
     return hits
 """
 
-class Treebank:
+class Treebank(api.SyntaxCorpusReader):
     trees = None
     
-    def __init__(self, trees):
+    def __init__(self, trees=None):
+        if trees is None:
+            trees = []
         self.trees = trees
     
     def get_trees(self):
         return self.trees
+
+    def sents(self):
+        for t in self.get_trees():
+            yield t.leaves()
+
+    def parsed_sents(self):
+        for t in self.get_trees():
+            yield t
     
     def sent(self, i):
         return self.trees[i].leaves()
     
     def remove_functions(self):
         map(lambda t: t.remove_functions(), self.trees)
-   
+    
     def remove_leaves(self):
         map(lambda t: t.remove_leaves(), self.trees)
     
