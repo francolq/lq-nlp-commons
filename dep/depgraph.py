@@ -15,17 +15,8 @@ class DepGraph(dependencygraph.DependencyGraph):
         self.stream = nltk_depgraph.stream
     
     def constree(self):
-        node = self.root
-        word = node['word']
-        deps = node['deps']
-        address = node['address']
-        ldeps = [i for i in deps if i < address]
-        rdeps = [i for i in deps if i > address]
-        lsubtrees = [self._constree(i) for i in ldeps]
-        rsubtrees = [self._constree(i) for i in rdeps]
-        csubtree = tree.Tree(node['tag'], [word])
-        
-        return treebank.Tree(tree.Tree(word, lsubtrees+[csubtree]+rsubtrees))
+        i = self.root['address']
+        return treebank.Tree(self._constree(i))
     
     def _constree(self, i):
         node = self.nodelist[i]
@@ -41,4 +32,3 @@ class DepGraph(dependencygraph.DependencyGraph):
         csubtree = tree.Tree(node['tag'], [word])
         
         return tree.Tree(word, lsubtrees+[csubtree]+rsubtrees)
-
