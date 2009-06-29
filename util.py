@@ -9,6 +9,8 @@ import pickle
 
 from nltk import tree
 
+obj_basedir = '../obj'
+
 def write_file(filename, content):
     f = open(filename, 'w')
     f.write(content)
@@ -44,8 +46,8 @@ def tree_consistent(b):
     return True
 
 def get_obj_basedir():
-    if os.path.isdir('../obj'):
-        return '../obj'
+    if os.path.isdir(obj_basedir):
+        return obj_basedir
     else:
         return '.'
 
