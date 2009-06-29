@@ -44,9 +44,10 @@ class BracketingModel(Model):
         treebank = self._get_treebank(treebank)
         
         S, Gold = [], []
-        for t in treebank.get_trees():
-            s = sentence.Sentence(t.leaves())
-            S += [s]
+        for s in treebank.sents():
+            S += [sentence.Sentence(s)]
+        
+        for t in treebank.parsed_sents():
             Gold += [bracketing.tree_to_bracketing(t)]
         
         self.S = S
