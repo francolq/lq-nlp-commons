@@ -23,12 +23,20 @@ class DepGraph(dependencygraph.DependencyGraph):
         word = node['word']
         deps = node['deps']
         if len(deps) == 0:
-            return tree.Tree(node['tag'], [word])
+            t = tree.Tree(node['tag'], [word])
+            t.span = (i, i+1)
+            return t
         address = node['address']
-        ldeps = [i for i in deps if i < address]
-        rdeps = [i for i in deps if i > address]
-        lsubtrees = [self._constree(i) for i in ldeps]
-        rsubtrees = [self._constree(i) for i in rdeps]
+        ldeps = [j for j in deps if j < address]
+        rdeps = [j for j in deps if j > address]
+        lsubtrees = [self._constree(j) for j in ldeps]
+        rsubtrees = [self._constree(j) for j in rdeps]
         csubtree = tree.Tree(node['tag'], [word])
+        csubtree.span = (i, i+1)
+        subtrees = lsubtrees+[csubtree]+rsubtrees
         
-        return tree.Tree(word, lsubtrees+[csubtree]+rsubtrees)
+        t = tree.Tree(word, subtrees)
+        j = subtrees[0].span[0]
+        k = subtrees[-1].span[1]
+        t.span = (j, k)
+        return t
