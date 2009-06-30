@@ -15,8 +15,15 @@ class DepGraph(dependencygraph.DependencyGraph):
         self.stream = nltk_depgraph.stream
     
     def constree(self):
-        i = self.root['address']
-        return treebank.Tree(self._constree(i))
+        # Some depgraphs have several roots (for instance, 512th of Turkish).
+        #i = self.root['address']
+        roots = self.nodelist[0]['deps']
+        if len(roots) == 1:
+            return treebank.Tree(self._constree(roots[0]))
+        else:
+            # TODO: check projectivity here also.
+            trees = [self._constree(i) for i in roots]
+            return treebank.Tree(tree.Tree('TOP', trees))
     
     def _constree(self, i):
         node = self.nodelist[i]
