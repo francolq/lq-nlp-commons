@@ -35,6 +35,11 @@ class DepGraph(dependencygraph.DependencyGraph):
         csubtree.span = (i, i+1)
         subtrees = lsubtrees+[csubtree]+rsubtrees
         
+        # check projectivity:
+        for j in range(len(subtrees)-1):
+            if subtrees[j].span[1] != subtrees[j+1].span[0]:
+                raise Exception('Non-projectable dependency graph.')
+        
         t = tree.Tree(word, subtrees)
         j = subtrees[0].span[0]
         k = subtrees[-1].span[1]
