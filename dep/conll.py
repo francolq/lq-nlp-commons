@@ -12,18 +12,33 @@ from dep import depgraph
 import treebank
 
 class CoNLLTreebank(treebank.Treebank):
-    def __init__(self, corpus, files=None):
+    def __init__(self, corpus, files=None, max_length=None):
         treebank.Treebank.__init__(self)
         self.corpus = corpus
         self.trees = []
         #print is_punctuation
+        i = 0
+        non_projectable, empty = 0, 0
         for d in self.corpus.parsed_sents(files):
             d2 = depgraph.DepGraph(d)
-            t = d2.constree()
-            t2 = CoNLLTree(t)
-            t2.remove_leaves()
-            t2.remove_punctuation(type(self).is_punctuation)
-            self.trees += [t2]
+            try:
+                t = d2.constree()
+            except:
+                #t2 = None
+                non_projectable += 1
+            else:
+                t2 = CoNLLTree(t)
+                t2.remove_leaves()
+                t2.remove_punctuation(type(self).is_punctuation)
+                s = t2.leaves()
+                if s != [] and (max_length is None or len(s) <= max_length):
+                    t2.corpus_index = i
+                    self.trees += [t2]
+                else:
+                    empty += 1
+            i += 1
+        self.non_projectable = non_projectable
+        self.empty = empty
     
     @staticmethod
     def is_punctuation(s):
@@ -31,9 +46,9 @@ class CoNLLTreebank(treebank.Treebank):
 
 
 class CoNLL06Treebank(CoNLLTreebank):
-    def __init__(self, root, files):
+    def __init__(self, root, files, max_length=None):
         corpus = dependency.DependencyCorpusReader(root, files)
-        CoNLLTreebank.__init__(self, corpus)
+        CoNLLTreebank.__init__(self, corpus, None, max_length)
 
 
 class CoNLLTree(treebank.Tree):
@@ -50,11 +65,12 @@ class CoNLLTree(treebank.Tree):
 
 
 class Turkish(CoNLL06Treebank):
-    root = '/Users/francolq/Documents/comp/doctorado/corpus/Turco/data/turkish/metu_sabanci/train'
-    files = ['turkish_metu_sabanci_train.conll']
+    root = '/Users/francolq/Documents/comp/doctorado/corpus/Turco/data/turkish/metu_sabanci/'
+    files = ['train/turkish_metu_sabanci_train.conll', \
+                'test/turkish_metu_sabanci_test.conll']
     
-    def __init__(self):
-        CoNLL06Treebank.__init__(self, self.root, self.files)
+    def __init__(self, max_length=None):
+        CoNLL06Treebank.__init__(self, self.root, self.files, max_length)
 
     @staticmethod
     def is_punctuation(s):
