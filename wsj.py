@@ -46,7 +46,7 @@ class WSJTree(treebank.Tree):
         return is_punctuation(s)
 
 
-#ÊTODO: Rename this class to WSJ.
+# TODO: Rename this class to WSJ.
 class WSJSents(bracket_parse.BracketParseCorpusReader):
     def __init__(self):
         bracket_parse.BracketParseCorpusReader.__init__(self, 'wsj_comb', '.*')
@@ -57,7 +57,7 @@ class WSJSents(bracket_parse.BracketParseCorpusReader):
         return LazyMap(f, bracket_parse.BracketParseCorpusReader.tagged_sents(self))
 
 
-#ÊTODO: remove this class and rename WSJSents to WSJ.
+# TODO: remove this class and rename WSJSents to WSJ.
 class WSJ(treebank.SavedTreebank):
     default_basedir = 'wsj_comb'
     trees = []
