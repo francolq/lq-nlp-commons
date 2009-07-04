@@ -9,6 +9,7 @@ import itertools
 
 from nltk import tree
 from nltk.corpus.reader import api
+from nltk.util import LazyMap
 
 import util
 
@@ -332,6 +333,7 @@ def span_hits_count(gold_spans, parse_spans, labelled=False):
     return hits
 """
 
+
 class Treebank(api.SyntaxCorpusReader):
     trees = None
     
@@ -344,12 +346,11 @@ class Treebank(api.SyntaxCorpusReader):
         return self.trees
 
     def sents(self):
-        for t in self.get_trees():
-            yield t.leaves()
+        # LaxyMap from nltk.util:
+        return LazyMap(lambda t: t.leaves(),  self.get_trees())
 
     def parsed_sents(self):
-        for t in self.get_trees():
-            yield t
+        return self.get_trees()
     
     def sent(self, i):
         return self.trees[i].leaves()
@@ -413,8 +414,7 @@ class Treebank(api.SyntaxCorpusReader):
     
     def word_freqs(self):
         d = {}
-        for t in self.trees:
-            s = t.leaves()
+        for s in self.sents():
             for w in s:
                 if w in d:
                     d[w] += 1
@@ -424,8 +424,8 @@ class Treebank(api.SyntaxCorpusReader):
     
     def length_freqs(self):
         d = {}
-        for t in self.trees:
-            l = len(t.leaves())
+        for s in self.sents():
+            l = len(s)
             if l in d:
                 d[l] += 1
             else:
