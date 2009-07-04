@@ -8,7 +8,7 @@ import itertools
 
 
 class WSJn(wsj.WSJ):
-   
+
     def __init__(self, n, basedir=None, load=True):
         wsj.WSJ.__init__(self, basedir)
         self.n = n
@@ -22,10 +22,10 @@ class WSJn(wsj.WSJ):
         m = lambda t: self._prepare(t)
         trees = [t for t in itertools.ifilter(f, itertools.imap(m, self.parsed()))]
         return trees
-   
+
     def _prepare(self, t):
         t.remove_leaves()
-        # Con esto elimino puntuacion, ellipsis y $ y # (currency) al mismo tiempo:
+        # Remove punctuation, ellipsis and currency ($, #) at the same time:
         t.filter_tags(lambda x: x in wsj.word_tags)
         return t
 

@@ -6,8 +6,9 @@ import itertools
 import os
 
 from nltk.corpus.reader import util
-from nltk.corpus.reader.bracket_parse import BracketParseCorpusReader
+from nltk.corpus.reader import bracket_parse
 from nltk import tree
+from nltk.util import LazyMap
 
 import treebank
 
@@ -37,7 +38,7 @@ def is_punctuation(s):
 
 
 class WSJTree(treebank.Tree):
-   
+    
     def is_ellipsis(self, s):
         return is_ellipsis(s)
     
@@ -45,6 +46,18 @@ class WSJTree(treebank.Tree):
         return is_punctuation(s)
 
 
+#ÊTODO: Rename this class to WSJ.
+class WSJSents(bracket_parse.BracketParseCorpusReader):
+    def __init__(self):
+        bracket_parse.BracketParseCorpusReader.__init__(self, 'wsj_comb', '.*')
+    
+    def tagged_sents(self):
+        # Remove punctuation, ellipsis and currency ($, #) at the same time:
+        f = lambda s: filter(lambda x: x[1] in word_tags, s)
+        return LazyMap(f, bracket_parse.BracketParseCorpusReader.tagged_sents(self))
+
+
+#ÊTODO: remove this class and rename WSJSents to WSJ.
 class WSJ(treebank.SavedTreebank):
     default_basedir = 'wsj_comb'
     trees = []
