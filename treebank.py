@@ -348,6 +348,10 @@ class Treebank(api.SyntaxCorpusReader):
     def sents(self):
         # LaxyMap from nltk.util:
         return LazyMap(lambda t: t.leaves(),  self.get_trees())
+    
+    def tagged_sents(self):
+        # LaxyMap from nltk.util:
+        return LazyMap(lambda t: t.pos(),  self.get_trees())
 
     def parsed_sents(self):
         return self.get_trees()
