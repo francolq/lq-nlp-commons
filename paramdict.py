@@ -16,23 +16,18 @@ class ParamDict:
         if count_evidence:
             self.evidence = {}
         self.default_val = default_val
-    
+
     def set_default_val(self, val):
         self.default_val = val
     
     def val(self, x):
-        if x in self.d:
-            return self.d[x]
-        else:
-            return self.default_val
+        return self.d.get(x, self.default_val)
     
     def setVal(self, x, val):
         self.d[x] = val
     
     def add1(self, x):
-        add(self.d, x, 1.0)
-        if self.count_evidence:
-            add(self.evidence, x, 1.0)
+        self.add(x, 1.0)
     
     def add(self, x, y):
         add(self.d, x, y)
@@ -42,9 +37,7 @@ class ParamDict:
     def iteritems(self):
         return self.d.iteritems()
 
+
 # Common procedure used in ParamDict:
 def add(dict, x, val):
-    if x in dict:
-        dict[x] = dict[x] + val
-    else:
-        dict[x] = val
+    dict[x] = dict.get(x, 0) + val
