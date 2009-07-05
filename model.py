@@ -39,9 +39,12 @@ class BracketingModel(Model):
     count_length_2 = True
     count_length_2_1 = False
     
-    def __init__(self, treebank=None):
+    def __init__(self, treebank=None, training_corpus=None):
         
         treebank = self._get_treebank(treebank)
+        if training_corpus == None:
+            training_corpus = treebank
+        self.training_corpus = training_corpus
         
         S, Gold = [], []
         for s in treebank.sents():
