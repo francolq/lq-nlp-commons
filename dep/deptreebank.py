@@ -36,11 +36,12 @@ def test2():
 
 
 class DepTree(treebank.Tree):
-    # DepTree converts a constituent tree to a dependency tree.
-    # Uses a head finder with Collins PhD Thesis (1999) rules.
-    # The attribute depset contains the set of dependencies.
-    # All the subtrees have the attributes head and head_index
-    # that also encodes dependency information.
+    """DepTree converts a constituent tree to a dependency tree.
+    Uses a head finder with Collins PhD Thesis (1999) rules.
+    The attribute depset contains the set of dependencies.
+    All the subtrees have the attributes head and head_index
+    that also encodes dependency information.
+    """
     
     def __init__(self, const_tree, labels=None):
         treebank.Tree.__init__(self, const_tree, labels=labels)
@@ -58,7 +59,7 @@ class DepTree(treebank.Tree):
             st.node += '['+children[st.head]+']'
         
         # Now compute the set of dependencies:
-        self.depset = depset(self)
+        self.depset = sorted(depset(self))
         
 
 def depset(deptree):
@@ -68,7 +69,7 @@ def depset(deptree):
     # Traverse the tree from the leaves upwards (postorder)
     for p in deptree.treepositions(order='postorder'):
         st = deptree[p]
-        if type(st) is str:
+        if isinstance(st, str):
             # We are at leave with index leave_index.
             aux[p] = leave_index
             leave_index += 1
@@ -96,12 +97,13 @@ def depset(deptree):
 
 
 def get_head(label, children):
-    # children must be a not empty list. Returns the index of the head, 
-    # starting from 1.
-    # (rules for the Penn Treebank, taken from p. 239 of Collins thesis).
-    # The rules for X and NX are not specified by Collins. We use the ones
-    # at <paste link here> (also at Yamada and Matsumoto 2003).
-    # (X only appears at wsj_0056.mrg and at wsj_0077.mrg)
+    """children must be a not empty list. Returns the index of the head,
+    starting from 1.
+    (rules for the Penn Treebank, taken from p. 239 of Collins thesis).
+    The rules for X and NX are not specified by Collins. We use the ones
+    at <paste link here> (also at Yamada and Matsumoto 2003).
+    (X only appears at wsj_0056.mrg and at wsj_0077.mrg)
+    """
     assert children != []
     if len(children) == 1:
         # Used also when label is a POS tag and children is a word.
@@ -207,7 +209,3 @@ head_rules = {'ADJP': ('l', 'NNS QP NN $ ADVP JJ VBN VBG ADJP JJR NP JJS DT FW R
  'NX': ('r', 'POS NN NNP NNPS NNS NX JJR CD JJ JJS RB QP NP'.split()), \
  'X': ('r', [])
 }
-
-
-class DepTreebank(treebank.Treebank):
-    pass
