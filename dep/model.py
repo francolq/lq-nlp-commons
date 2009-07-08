@@ -34,7 +34,7 @@ class DepModel(model.Model):
         return treebank
     
     
-    def eval(self, output=True, short=False, long=False, max_length=10):
+    def eval(self, output=True, short=False, long=False, max_length=None):
         Gold = self.Gold
         
         Count = 0
@@ -43,7 +43,8 @@ class DepModel(model.Model):
         
         for i in range(len(Gold)):
             l = Gold[i].length
-            if l <= max_length and (self.count_length_2_1 or (self.count_length_2 and l == 2) or l >= 3):
+            if (max_length is None or l <= max_length) \
+                    and (self.count_length_2_1 or (self.count_length_2 and l == 2) or l >= 3):
                 (count, directed, undirected) = self.measures(i)
                 Count += count
                 Directed += directed
