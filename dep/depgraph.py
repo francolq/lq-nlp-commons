@@ -52,3 +52,13 @@ class DepGraph(dependencygraph.DependencyGraph):
         k = subtrees[-1].span[1]
         t.span = (j, k)
         return t
+
+
+def from_depset(depset, s):
+    """Returns a DepGraph with the dependencies of depset over the sentence s.
+    (i, j) in depset means that s[i] depends on s[j]. depset must be sorted.
+    """
+    tab = ""
+    for i, j in depset:
+        tab += '\t'.join([str(i+1), s[i], '_', s[i], '_\t_', str(j+1), '_\t_\t_\n'])
+    return DepGraph(dependencygraph.DependencyGraph(tab))
