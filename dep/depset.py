@@ -9,9 +9,14 @@ class DepSet:
         self.deps = deps
 
 
+def from_depgraph(g):
+    length = len(g.nodelist)-1
+    deps = [(n['address']-1, n['head']-1) for n in g.nodelist[1:]]
+    return DepSet(length, deps)
+
+
 def deptree_to_depset(t):
-    l = len(t.leaves())
-    return DepSet(l, t.depset)
+    return DepSet(len(t.leaves()), t.depset)
 
 
 def lhead_depset(length):
