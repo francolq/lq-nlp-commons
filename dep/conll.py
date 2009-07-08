@@ -7,6 +7,7 @@
 from nltk.corpus.reader import dependency
 from nltk import tree
 from nltk import corpus
+from nltk.util import LazyMap
 
 from dep import depgraph
 import treebank
@@ -44,6 +45,13 @@ class CoNLLTreebank(treebank.Treebank):
     def is_punctuation(s):
         return False
 
+    # FIXME: overriden because words are removed and tags are leaves.
+    # don't remove words.
+    def tagged_sents(self):
+        # LaxyMap from nltk.util:
+        f = lambda t: [(x,x) for x in t.leaves()]
+        return LazyMap(f,  self.get_trees())
+
 
 class CoNLL06Treebank(CoNLLTreebank):
     def __init__(self, root, files, max_length=None):
@@ -65,7 +73,7 @@ class CoNLLTree(treebank.Tree):
 
 
 class Turkish(CoNLL06Treebank):
-    root = '/Users/francolq/Documents/comp/doctorado/corpus/Turco/data/turkish/metu_sabanci/'
+    root = '/Users/francolq/Documents/comp/doctorado/corpus/conll06/data/turkish/metu_sabanci/'
     files = ['train/turkish_metu_sabanci_train.conll', \
                 'test/turkish_metu_sabanci_test.conll']
     
@@ -75,6 +83,18 @@ class Turkish(CoNLL06Treebank):
     @staticmethod
     def is_punctuation(s):
         return s == 'Punc'
+
+
+class Danish(CoNLL06Treebank):
+    root = '/Users/francolq/Documents/comp/doctorado/corpus/conll06/data/danish/ddt/'
+    files = ['train/danish_ddt_train.conll', 'test/danish_ddt_test.conll']
+
+    def __init__(self, max_length=None):
+        CoNLL06Treebank.__init__(self, self.root, self.files, max_length)
+
+    @staticmethod
+    def is_punctuation(s):
+        return s == 'XP'
 
 
 class Catalan(CoNLLTreebank):
