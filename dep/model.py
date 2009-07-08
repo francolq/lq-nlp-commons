@@ -6,7 +6,8 @@ import itertools
 #from .. import model
 import model
 import sentence
-from . import deptree
+from dep import depset
+from dep import dwsj
 
 class DepModel(model.Model):
     count_length_2 = True
@@ -21,7 +22,7 @@ class DepModel(model.Model):
         for t in treebank.get_trees():
             s = sentence.Sentence(t.leaves())
             S += [s]
-            Gold += [deptree.tree_to_deptree(t)]
+            Gold += [depset.deptree_to_depset(t)]
         
         self.S = S
         self.Gold = Gold
@@ -29,7 +30,6 @@ class DepModel(model.Model):
     
     def _get_treebank(self, treebank=None):
         if treebank is None:
-            import dep.dwsj
             treebank = dwsj.DepWSJ10()
         return treebank
     
@@ -38,29 +38,29 @@ class DepModel(model.Model):
         Gold = self.Gold
         
         Count = 0
-        Labeled = 0.0
-        Unlabeled = 0.0
+        Directed = 0.0
+        Undirected = 0.0
         
         for i in range(len(Gold)):
             l = Gold[i].length
             if l <= max_length and (self.count_length_2_1 or (self.count_length_2 and l == 2) or l >= 3):
-                (count, labeled, unlabeled) = self.measures(i)
+                (count, directed, undirected) = self.measures(i)
                 Count += count
-                Labeled += labeled
-                Unlabeled += unlabeled
+                Directed += directed
+                Undirected += undirected
         
-        Labeled = Labeled / Count
-        Unlabeled = Unlabeled / Count
+        Directed = Directed / Count
+        Undirected = Undirected / Count
         
-        self.evaluation = (Count, Labeled, Unlabeled)
+        self.evaluation = (Count, Directed, Undirected)
         self.evaluated = True
         
         if output and not short:
             print "Number of Trees:", len(Gold)
-            print "  Labeled Accuracy: %2.1f" % (100*Labeled)
-            print "  Unlabeled Accuracy: %2.1f" % (100*Unlabeled)
+            print "  Directed Accuracy: %2.1f" % (100*Directed)
+            print "  Undirected Accuracy: %2.1f" % (100*Undirected)
         elif output and short:
-            print "L =", Labeled, "UL =", Unlabeled
+            print "L =", Directed, "UL =", Undirected
         
         return self.evaluation
     
@@ -70,13 +70,13 @@ class DepModel(model.Model):
         # Measures for the i-th parse.
         
         g, p = self.Gold[i].deps, self.Parse[i].deps
-        (n, l, u) = (self.Gold[i].length, 0, 0)
+        (n, d, u) = (self.Gold[i].length, 0, 0)
         for (a, b) in g:
             b1 = (a, b) in p
             b2 = (b, a) in p
             if b1:
-                l += 1
+                d += 1
             if b1 or b2:
                 u += 1
         
-        return (n, l, u)
+        return (n, d, u)
