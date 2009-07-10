@@ -20,13 +20,18 @@ class CoNLLTreebank(treebank.Treebank):
         #print is_punctuation
         i = 0
         non_projectable, empty = 0, 0
+        non_leaf = []
         for d in self.corpus.parsed_sents(files):
             d2 = depgraph.DepGraph(d)
-            d2.remove_leaves(type(self).is_punctuation)
             try:
+                d2.remove_leaves(type(self).is_punctuation)
                 t = d2.constree()
-            except:
-                non_projectable += 1
+            except Exception as e:
+                msg = e[0]
+                if msg.startswith('Non-projectable'):
+                    non_projectable += 1
+                else:
+                    non_leaf += [i]
             else:
                 s = t.leaves()
                 if s != [] and (max_length is None or len(s) <= max_length):
@@ -38,6 +43,7 @@ class CoNLLTreebank(treebank.Treebank):
             i += 1
         self.non_projectable = non_projectable
         self.empty = empty
+        self.non_leaf = non_leaf
     
     @staticmethod
     def is_punctuation(n):
