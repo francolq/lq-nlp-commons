@@ -13,6 +13,37 @@ class DepGraph(dependencygraph.DependencyGraph):
         self.nodelist = nltk_depgraph.nodelist
         self.root = nltk_depgraph.root
         self.stream = nltk_depgraph.stream
+
+    def remove_leaves(self, f):
+        """f must be a function that takes a node dict and returns a boolean.
+        """
+        nodelist = self.nodelist
+        newnodelist = [nodelist[0].copy()]
+        newindex = [0]
+        i, j = 1, 1
+        while i < len(nodelist):
+            node = nodelist[i]
+            if not f(node):
+                # this node stays
+                newnode = node.copy()
+                newnode['address'] = j
+                newnodelist.append(newnode)
+                newindex.append(j)
+                j += 1
+            else:
+                if node['deps'] != []:
+                    # FIXME: throw exception.
+                    print "Warning: removing non-leaf."
+                newindex.append(-1)
+            i += 1
+        #print newindex
+        # fix attributes 'head' and 'deps':
+        node = newnodelist[0]
+        node['deps'] = [newindex[i] for i in node['deps'] if newindex[i] != -1]
+        for node in newnodelist[1:]:
+            node['head'] = newindex[node['head']]
+            node['deps'] = [newindex[i] for i in node['deps'] if newindex[i] != -1]
+        self.nodelist = newnodelist
     
     def constree(self):
         # Some depgraphs have several roots (for instance, 512th of Turkish).
