@@ -1,15 +1,19 @@
 from __future__ import absolute_import
-# dep/model.py: A general model for dependency parsing (class DepModel).
+# dep/model.py: A general model for dependency parsing (class DepModel), and a
+# general model for projective dependency parsing, with evaluation also as
+# constituent trees.
 
-import itertools
 
 #from .. import model
-import model
 import sentence
+import bracketing
+import model
 from dep import depset
 from dep import dwsj
 
+
 class DepModel(model.Model):
+    """A general model for dependency parsing."""
     count_length_2 = True
     count_length_2_1 = False
     
@@ -81,3 +85,53 @@ class DepModel(model.Model):
                 u += 1
         
         return (n, d, u)
+
+
+class ProjDepModel(DepModel):
+    """A general model for projective dependency parsing, with evaluation also
+    as constituent trees.
+    """
+    def __init__(self, treebank=None, training_corpus=None):
+        """
+        The elements of the treebank must be trees with a DepSet in the
+        attribute depset.
+        """
+        treebank = self._get_treebank(treebank)
+        if training_corpus == None:
+            training_corpus = treebank
+        self.test_corpus = treebank
+        self.training_corpus = training_corpus
+        S = []
+        for s in treebank.tagged_sents():
+            s = [x[1] for x in s]
+            S += [sentence.Sentence(s)]
+        self.S = S
+        # Extract gold as DepSets:
+        # FIXME: call super and do this there.
+        self.Gold = [t.depset for t in treebank.parsed_sents()]
+        
+        # Exctract gold as Bracketings:
+        self.bracketing_model = model.BracketingModel(treebank)
+    
+    def eval(self, output=True, short=False, long=False, max_length=None):
+        """Compute evaluation of the parses against the test corpus. Computes
+        unlabeled precision, recall and F1 between the bracketings, and directed
+        and undirected dependency accuracy between the dependency structures.
+        """
+        # XXX: empezamos a lo bruto:
+        self.bracketing_model.Parse = [bracketing.tree_to_bracketing(t) for t in self.Parse]
+        #dmvccm.DMVCCM.eval(self, output, short, long, max_length)
+        self.bracketing_model.eval(output, short, long, max_length)
+
+        # Ahora eval de dependencias:
+        self.DepParse = self.Parse
+        self.Parse = [type(self).tree_to_depset(t) for t in self.DepParse]
+        #model.DepModel.eval(self, output, short, long, max_length)
+        DepModel.eval(self, output, short, long, max_length)
+        self.Parse = self.DepParse
+
+    @staticmethod
+    def tree_to_depset(t):
+        """Function used to convert the trees returned by the parser to DepSets.
+        """
+        raise Exception('Static function tree_to_depset must be overriden.')
