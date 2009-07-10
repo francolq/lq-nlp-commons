@@ -7,9 +7,9 @@
 from nltk.corpus.reader import dependency
 from nltk import tree
 from nltk import corpus
-from nltk.util import LazyMap
 
 from dep import depgraph
+from dep import depset
 import treebank
 
 class CoNLLTreebank(treebank.Treebank):
@@ -22,19 +22,17 @@ class CoNLLTreebank(treebank.Treebank):
         non_projectable, empty = 0, 0
         for d in self.corpus.parsed_sents(files):
             d2 = depgraph.DepGraph(d)
+            d2.remove_leaves(type(self).is_punctuation)
             try:
                 t = d2.constree()
             except:
-                #t2 = None
                 non_projectable += 1
             else:
-                t2 = CoNLLTree(t)
-                t2.remove_leaves()
-                t2.remove_punctuation(type(self).is_punctuation)
-                s = t2.leaves()
+                s = t.leaves()
                 if s != [] and (max_length is None or len(s) <= max_length):
-                    t2.corpus_index = i
-                    self.trees += [t2]
+                    t.corpus_index = i
+                    t.depset = depset.from_depgraph(d2)
+                    self.trees += [t]
                 else:
                     empty += 1
             i += 1
@@ -42,15 +40,8 @@ class CoNLLTreebank(treebank.Treebank):
         self.empty = empty
     
     @staticmethod
-    def is_punctuation(s):
+    def is_punctuation(n):
         return False
-
-    # FIXME: overriden because words are removed and tags are leaves.
-    # don't remove words.
-    def tagged_sents(self):
-        # LaxyMap from nltk.util:
-        f = lambda t: [(x,x) for x in t.leaves()]
-        return LazyMap(f,  self.get_trees())
 
 
 class CoNLL06Treebank(CoNLLTreebank):
@@ -81,8 +72,8 @@ class Turkish(CoNLL06Treebank):
         CoNLL06Treebank.__init__(self, self.root, self.files, max_length)
 
     @staticmethod
-    def is_punctuation(s):
-        return s == 'Punc'
+    def is_punctuation(n):
+        return n['tag'] == 'Punc'
 
 
 class Danish(CoNLL06Treebank):
@@ -93,8 +84,8 @@ class Danish(CoNLL06Treebank):
         CoNLL06Treebank.__init__(self, self.root, self.files, max_length)
 
     @staticmethod
-    def is_punctuation(s):
-        return s == 'XP'
+    def is_punctuation(n):
+        return n['tag'] == 'XP'
 
 
 class Catalan(CoNLLTreebank):
@@ -102,8 +93,8 @@ class Catalan(CoNLLTreebank):
         CoNLLTreebank.__init__(self, corpus.conll2007, ['cat.test', 'cat.train'])
 
     @staticmethod
-    def is_punctuation(s):
-        return s.lower()[0] == 'f'
+    def is_punctuation(n):
+        return n['tag'].lower()[0] == 'f'
 
 
 class Basque(CoNLLTreebank):
@@ -111,5 +102,5 @@ class Basque(CoNLLTreebank):
         CoNLLTreebank.__init__(self, corpus.conll2007, ['eus.test', 'eus.train'])
 
     @staticmethod
-    def is_punctuation(s):
-        return s == 'PUNT'
+    def is_punctuation(n):
+        return n['tag'] == 'PUNT'
