@@ -125,7 +125,9 @@ class ProjDepModel(DepModel):
 
         # Ahora eval de dependencias:
         self.DepParse = self.Parse
-        self.Parse = [type(self).tree_to_depset(t) for t in self.DepParse]
+        # type no anda porque devuelve instance:
+        #self.Parse = [type(self).tree_to_depset(t) for t in self.DepParse]
+        self.Parse = [self.__class__.tree_to_depset(t) for t in self.DepParse]
         #model.DepModel.eval(self, output, short, long, max_length)
         DepModel.eval(self, output, short, long, max_length)
         self.Parse = self.DepParse
