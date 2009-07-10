@@ -13,6 +13,9 @@ import bracketing
 import wsj10
 
 class Model:
+    Gold = []
+    Parse = []
+    evaluation = None
     trained = False
     tested = False
     evaluated = False
@@ -23,16 +26,37 @@ class Model:
     def parse(self, s):
         return None
     
-    def test(self, S):
-        self.Parse = [self.parse(s) for s in S]
+    #def test(self, S):
+    #    self.Parse = [self.parse(s) for s in S]
+    #    self.tested = True
+    
+    def test(self, short=False, max_length=None):
+        self.Parse, self.Weight = [], 0.0
+
+        n = str(len(self.S))
+        m = len(n)
+        o = "%"+str(m)+"d of "+n
+        i = 0
+        print "Parsed", o % i,
+        sys.stdout.flush()
+        o = ("\b"*(2*m+5)) + o
+        for s in self.S:
+            if max_length is None or len(s) <= max_length:
+                (parse, weight) = self.parse(s)
+            else:
+                (parse, weight) = (None, 0.0)
+            self.Parse += [parse]
+            self.Weight += weight
+
+            i += 1
+            print o % i,
+            sys.stdout.flush()
+        print "\nFinished parsing."
+        self.eval(short=short, max_length=max_length)
         self.tested = True
     
-    def eval(self):
+    def eval(self, short=False, max_length=None):
         self.evaluated = True
-    
-    Gold = []
-    Parse = []
-    evaluation = None
 
 
 class BracketingModel(Model):
@@ -63,30 +87,6 @@ class BracketingModel(Model):
         if treebank is None:
             treebank = wsj10.WSJ10()
         return treebank
-    
-    def test(self, short=False, max_length=None):
-        self.Parse, self.Weight = [], 0.0
-        
-        n = str(len(self.S))
-        m = len(n)
-        o = "%"+str(m)+"d of "+n
-        i = 0
-        print "Parsed", o % i,
-        sys.stdout.flush()
-        o = ("\b"*(2*m+5)) + o
-        for s in self.S:
-            if max_length is None or len(s) <= max_length:
-                (parse, weight) = self.parse(s)
-            else:
-                (parse, weight) = (None, 0.0)
-            self.Parse += [parse]
-            self.Weight += weight
-            
-            i += 1
-            print o % i,
-            sys.stdout.flush()
-        print "\nFinished parsing."
-        self.eval(short=short, max_length=max_length)
     
     def eval(self, output=True, short=False, long=False, max_length=None):
         """Compute precision, recall and F1 between the parsed bracketings and
