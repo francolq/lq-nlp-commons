@@ -56,19 +56,6 @@ class CoNLL06Treebank(CoNLLTreebank):
         CoNLLTreebank.__init__(self, corpus, None, max_length)
 
 
-class CoNLLTree(treebank.Tree):
-    def remove_punctuation(self, is_punctuation):
-        def f(t):
-            if isinstance(t, tree.Tree):
-                punctuation = True
-                for leave in t.leaves():
-                    punctuation = punctuation and is_punctuation(leave)
-                return not punctuation
-            else:
-                return not is_punctuation(t)
-        self.filter_subtrees(f)
-
-
 class Turkish(CoNLL06Treebank):
     root = '/Users/francolq/Documents/comp/doctorado/corpus/conll06/data/turkish/metu_sabanci/'
     files = ['train/turkish_metu_sabanci_train.conll', \
