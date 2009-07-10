@@ -31,9 +31,6 @@ class DepGraph(dependencygraph.DependencyGraph):
                 newindex.append(j)
                 j += 1
             else:
-                if node['deps'] != []:
-                    # FIXME: throw exception.
-                    print "Warning: removing non-leaf."
                 newindex.append(-1)
             i += 1
         #print newindex
@@ -41,6 +38,8 @@ class DepGraph(dependencygraph.DependencyGraph):
         node = newnodelist[0]
         node['deps'] = [newindex[i] for i in node['deps'] if newindex[i] != -1]
         for node in newnodelist[1:]:
+            if newindex[node['head']] == -1:
+                raise Exception('Removing non-leaf.')
             node['head'] = newindex[node['head']]
             node['deps'] = [newindex[i] for i in node['deps'] if newindex[i] != -1]
         self.nodelist = newnodelist
