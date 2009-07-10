@@ -10,6 +10,7 @@ import sys
 
 import sentence
 import bracketing
+import wsj10
 
 class Model:
     trained = False
@@ -47,7 +48,9 @@ class BracketingModel(Model):
         self.training_corpus = training_corpus
         
         S, Gold = [], []
-        for s in treebank.sents():
+        #for s in treebank.sents():
+        for s in treebank.tagged_sents():
+            s = [x[1] for x in s]
             S += [sentence.Sentence(s)]
         
         for t in treebank.parsed_sents():
@@ -58,7 +61,6 @@ class BracketingModel(Model):
     
     def _get_treebank(self, treebank=None):
         if treebank is None:
-            import wsj10
             treebank = wsj10.WSJ10()
         return treebank
     
