@@ -2,9 +2,11 @@
 # URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
 # For license information, see LICENSE.txt
 
-import wsj
-
 import itertools
+
+from nltk.util import LazyMap
+
+import wsj
 
 
 class WSJn(wsj.WSJ):
@@ -28,6 +30,11 @@ class WSJn(wsj.WSJ):
         # Remove punctuation, ellipsis and currency ($, #) at the same time:
         t.filter_tags(lambda x: x in wsj.word_tags)
         return t
+    
+    def tagged_sents(self):
+        # LaxyMap from nltk.util:
+        f = lambda t: [(x,x) for x in t.leaves()]
+        return LazyMap(f,  self.get_trees())
 
 
 class WSJ10(WSJn):
