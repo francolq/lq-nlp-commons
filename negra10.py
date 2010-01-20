@@ -2,13 +2,14 @@
 # URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
 # For license information, see LICENSE.txt
 
-import negra
-
 import itertools
+
+from nltk.util import LazyMap
+
+import negra
 
 
 class Negran(negra.Negra):
-    
     
     def __init__(self, n, basedir=None, load=True):
         negra.Negra.__init__(self, basedir)
@@ -16,7 +17,6 @@ class Negran(negra.Negra):
         self.filename = 'negra%02i.treebank' % n
         if load:
             self.get_trees()
-    
     
     def _generate_trees(self):
         print "Parsing treebank..."
@@ -28,13 +28,16 @@ class Negran(negra.Negra):
         trees = [t for t in itertools.ifilter(f, itertools.imap(m, self.parsed()))]
         return trees
     
-    
     def _prepare(self, t):
         t.remove_leaves()
         t.remove_ellipsis()
         t.remove_punctuation()
         return t
-    
+
+    def tagged_sents(self):
+        # LazyMap from nltk.util:
+        f = lambda t: [(x,x) for x in t.leaves()]
+        return LazyMap(f,  self.get_trees())
     
     # XXX: este simplify tags deja un tag '' en el corpus. leer implementacion.
     def simplify_tags(self):
@@ -53,7 +56,6 @@ class Negran(negra.Negra):
 
 
 class Negra10(Negran):
-    
     
     def __init__(self, basedir=None, load=True):
         Negran.__init__(self, 10, basedir, load)
