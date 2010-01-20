@@ -15,6 +15,19 @@ def from_depgraph(g):
     return DepSet(length, deps)
 
 
+def from_string(s):
+    """
+    >>> d = from_string('[(0,3), (1,0), (2,1), (3,-1)]\n')
+    """
+    t = s[1:].split()
+    l = len(t)
+    deps = []
+    for x in t:
+        y = x[1:-2].split(',')
+        deps += [(int(y[0]), int(y[1]))]
+    return DepSet(l, deps)
+
+
 def deptree_to_depset(t):
     return DepSet(len(t.leaves()), t.depset)
 
