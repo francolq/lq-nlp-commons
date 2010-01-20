@@ -8,6 +8,7 @@
 import itertools
 import sys
 
+import util
 import sentence
 import bracketing
 import wsj10
@@ -33,13 +34,14 @@ class Model:
     def test(self, short=False, max_length=None):
         self.Parse, self.Weight = [], 0.0
 
-        n = str(len(self.S))
-        m = len(n)
-        o = "%"+str(m)+"d of "+n
-        i = 0
-        print "Parsed", o % i,
-        sys.stdout.flush()
-        o = ("\b"*(2*m+5)) + o
+        #n = str(len(self.S))
+        #m = len(n)
+        #o = "%"+str(m)+"d of "+n
+        #i = 0
+        #print "Parsed", o % i,
+        #sys.stdout.flush()
+        #o = ("\b"*(2*m+5)) + o
+        p = util.Progress('Parsed', 0, len(self.S))
         for s in self.S:
             if max_length is None or len(s) <= max_length:
                 (parse, weight) = self.parse(s)
@@ -47,10 +49,10 @@ class Model:
                 (parse, weight) = (None, 0.0)
             self.Parse += [parse]
             self.Weight += weight
-
-            i += 1
-            print o % i,
-            sys.stdout.flush()
+            #i += 1
+            #print o % i,
+            #sys.stdout.flush()
+            p.next()
         print "\nFinished parsing."
         self.eval(short=short, max_length=max_length)
         self.tested = True
