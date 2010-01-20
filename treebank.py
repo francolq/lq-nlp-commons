@@ -206,6 +206,37 @@ class Tree(tree.Tree):
             result = set(filter(lambda (x,y): x != y-1, result))
         return result
 
+    def spannings2(self, leaves=True, root=True, unary=True, order=None):
+        """TODO: Returns the unlabeled spannings as an ordered list.
+        Meant to replace spannings in the future.
+        """
+        queue = self.treepositions(order)
+        stack = [(queue.pop(0),0)]
+        j = 0
+        result = set()
+        while stack != []:
+            (p,i) = stack[-1]
+            if queue == [] or queue[0][:-1] != p:
+                # ya puedo devolver spanning de p:
+                if isinstance(self[p], tree.Tree):
+                    result.add((i, j))
+                else:
+                    # es una hoja:
+                    if leaves:
+                        result.add((i, i+1))
+                    j = i+1
+                stack.pop()
+            else: # queue[0] es el sgte. hijo de p:
+                q = queue.pop(0)
+                stack.append((q,j))
+        if not root:
+            # FIXME: seguramente se puede programar mejor:
+            result.remove((0,len(self.leaves())))
+        if not unary:
+            # FIXME: seguramente se puede programar mejor:
+            result = set(filter(lambda (x,y): x != y-1, result))
+        return result
+
 
 def measures(gold, parse):
     result = labelled_measures(gold, parse)
@@ -346,11 +377,11 @@ class Treebank(api.SyntaxCorpusReader):
         return self.trees
 
     def sents(self):
-        # LaxyMap from nltk.util:
+        # LazyMap from nltk.util:
         return LazyMap(lambda t: t.leaves(),  self.get_trees())
     
     def tagged_sents(self):
-        # LaxyMap from nltk.util:
+        # LazyMap from nltk.util:
         return LazyMap(lambda t: t.pos(),  self.get_trees())
 
     def parsed_sents(self):
