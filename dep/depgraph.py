@@ -38,9 +38,10 @@ class DepGraph(dependencygraph.DependencyGraph):
         node = newnodelist[0]
         node['deps'] = [newindex[i] for i in node['deps'] if newindex[i] != -1]
         for node in newnodelist[1:]:
-            if newindex[node['head']] == -1:
+            i = newindex[node['head']]
+            if i == -1:
                 raise Exception('Removing non-leaf.')
-            node['head'] = newindex[node['head']]
+            node['head'] = i
             node['deps'] = [newindex[i] for i in node['deps'] if newindex[i] != -1]
         self.nodelist = newnodelist
     
