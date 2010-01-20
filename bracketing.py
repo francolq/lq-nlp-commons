@@ -73,7 +73,8 @@ class Bracketing:
             c1 = itertools.imap(lambda a: (a, a+1), range(self.start_index, self.start_index+self.length))
         else:
             c1 = []
-        if whole and self.length > 1:
+        #if whole and self.length > 1:
+        if whole:
             c3 = [(self.start_index, self.start_index + self.length)]
         else:
             c3 = []
@@ -241,8 +242,11 @@ def treefy(s, b):
     return t
 
 
-# por ejemplo, s = '(DT NNP NN) (VBD (DT (VBZ (DT JJ NN))))'
 def string_to_bracketing(s):
+    """Converts a string to a bracketing.
+
+    >>> string_to_bracketing('(DT NNP NN) (VBD (DT (VBZ (DT JJ NN))))')
+    """
     s2 = s.replace('(', '(X ')
     s2 = '((X '+s2+'))'
     t = treebank.Tree(tree.bracket_parse(s2))
@@ -250,25 +254,24 @@ def string_to_bracketing(s):
     return b
 
 
-# t instanceof nltk.Tree:
 def tree_to_bracketing(t, start_index=0):
+    """t must be instance of treebank.Tree.
+    """
     l = len(t.leaves())
     spans = t.spannings(leaves=False,root=False,unary=False)
     moved_spans = set(map(lambda (a, b): (a+start_index, b+start_index), spans))
     return Bracketing(l, moved_spans, start_index)
 
 
-# para uso interno y exclusivo de binary_bracketings()
-# corre los brackets x unidades hacia la derecha:
 def add(B, x):
+    """Helper for binary_bracketings. Adds x to the indices of the brackets.
+    """
     return map(lambda s: map(lambda (a,b): (a+x,b+x), s), B)
 
 
-# devuelve todos los bracketings binarios.
-# n es la cantidad de hojas del arbol (n => 1).
-# FIXME: por ahora devuelve el span que abarca todo. corregir!
-# FIXME: no usa la clase Bracketing!
 def _binary_bracketings(n):
+    """Helper for binary_bracketings.
+    """
     if n == 1:
         return [[]]
     elif n == 2:
@@ -290,24 +293,31 @@ def _binary_bracketings(n):
 
 
 def binary_bracketings(n):
+    """Returns all the possible binary bracketings of n leaves.
+    """
+    # remove whole span bracket and wrap into a Bracketing object:
     return map(lambda b: Bracketing(n, set(b[1:])), _binary_bracketings(n))
 
 
 # Devuelve el bracketing rbranch para frase de largo length:
 def rbranch_bracketing(length, start_index=0):
+    """Returns the rbranch bracketing of the given length.
+    """
     b = set((i, start_index+length) for i in range(start_index+1, start_index+length-1))
     return Bracketing(length, b, start_index=start_index)
 
 
-# Devuelve el bracketing lbranch para frase de largo length:
 def lbranch_bracketing(length, start_index=0):
+    """Returns the lbranch bracketing of the given length.
+    """
     b = set((start_index, i) for i in range(start_index+2, start_index+length))
     return Bracketing(length, b, start_index=start_index)
 
 
-# Devuelve un bracketing binario B de acuerdo a la distribucion P_split(). 
-# n es el largo de la frase.
 def P_split(n):
+    """Returns a binary bracketing according to the P_split() distribution.
+    n is the number of leaves.
+    """
     if n <= 2:
         return Bracketing(n)
     k = random.randint(1, n-1)
@@ -317,6 +327,8 @@ def P_split(n):
 
 
 def gP_split(i, j):
+    """Helper for P_split().
+    """
     if i+1 == j:
         b = []
     else:
@@ -325,9 +337,10 @@ def gP_split(i, j):
     return b
 
 
-# Devuelve la prob. de b de acuerdo a la dist. P_split.
-# FIXME: solo se que funciona si b.start_index = 0
+# FIXME: I think it only works with b.start_index = 0.
 def P_split_prob(b):
+    """Returns the probability of b according to the P_split() distribution.
+    """
     """n = b.length
     if n <= 2:
         p = 1.0
