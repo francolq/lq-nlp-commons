@@ -32,7 +32,7 @@ class WSJn(wsj.WSJ):
         return t
     
     def tagged_sents(self):
-        # LaxyMap from nltk.util:
+        # LazyMap from nltk.util:
         f = lambda t: [(x,x) for x in t.leaves()]
         return LazyMap(f,  self.get_trees())
 
