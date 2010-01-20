@@ -6,6 +6,7 @@
 
 import os
 import pickle
+import sys
 
 from nltk import tree
 
@@ -106,3 +107,30 @@ class ObjectSaver:
 
     def close(self):
         self.f.close()
+
+
+class Progress:
+    """
+    Helper class to ouput to stdout a fancy indicator of the progress of something.
+    See model.Model for an example of usage.
+
+    >>> p = Progress('Parsed', 0, 200)
+    Parsed   0 of 200
+    >>> p.next()
+      1 of 200
+    >>> p.next()
+      2 of 200
+    """
+    
+    def __init__(self, prefix, n_init, n_max):
+        m = len(str(n_max))
+        o = "%"+str(m)+"d of "+str(n_max)
+        self.i = 0
+        print prefix, o % self.i,
+        sys.stdout.flush()
+        self.o = ("\b"*(2*m+5)) + o
+
+    def next(self):
+        self.i += 1
+        print self.o % self.i,
+        sys.stdout.flush()
