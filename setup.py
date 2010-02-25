@@ -14,6 +14,6 @@ setup(name='lq-nlp-commons',
          py_modules=['bracketing', 'lbranch', 'paramdict',
             'treebank', 'wsj10', 'cast3lb', 'model', 'rbranch',
             'ubound', 'cast3lb10', 'negra', 'sentence', 'util',
-            'eval', 'negra10', 'setup', 'wsj'],
+            'eval', 'negra10', 'setup', 'wsj', 'graph'],
          license='GNU General Public License',
         )
