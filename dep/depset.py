@@ -2,6 +2,9 @@
 #
 
 
+import util
+
+
 class DepSet:
     
     def __init__(self, length, deps):
@@ -19,12 +22,14 @@ def from_string(s):
     """
     >>> d = from_string('[(0,3), (1,0), (2,1), (3,-1)]\n')
     """
-    t = s[1:].split()
+    """t = s[1:].split()
     l = len(t)
     deps = []
     for x in t:
         y = x[1:-2].split(',')
-        deps += [(int(y[0]), int(y[1]))]
+        deps += [(int(y[0]), int(y[1]))]"""
+    deps = util.safe_eval(s)
+    l = len(deps)
     return DepSet(l, deps)
 
 
