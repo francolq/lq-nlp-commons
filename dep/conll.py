@@ -56,6 +56,19 @@ class CoNLL06Treebank(CoNLLTreebank):
         CoNLLTreebank.__init__(self, corpus, None, max_length)
 
 
+class German(CoNLL06Treebank):
+    root = '/Users/francolq/Documents/comp/doctorado/corpus/conll06/data/german/tiger/'
+    files = ['train/german_tiger_train.conll', \
+                'test/german_tiger_test.conll']
+
+    def __init__(self, max_length=None):
+        CoNLL06Treebank.__init__(self, self.root, self.files, max_length)
+
+    @staticmethod
+    def is_punctuation(n):
+        return n['tag'] == 'PUNC'
+
+
 class Turkish(CoNLL06Treebank):
     root = '/Users/francolq/Documents/comp/doctorado/corpus/conll06/data/turkish/metu_sabanci/'
     files = ['train/turkish_metu_sabanci_train.conll', \
