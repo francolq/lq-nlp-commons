@@ -8,9 +8,11 @@ import os
 import pickle
 import sys
 
-from nltk import tree
+import nltk
 
-obj_basedir = '../obj'
+
+obj_basedir = 'francolq'
+
 
 def write_file(filename, content):
     f = open(filename, 'w')
@@ -37,6 +39,8 @@ def powerset(s):
 
 # me fijo si un bracketing no tiene cosas que se cruzan
 def tree_consistent(b):
+    """FIXME: move this to the bracketing package.
+    """
     def crosses((a,b),(c,d)):
         return (a < c and c < b and b < d) or (c < a and a < d and d < b)
 
@@ -46,11 +50,14 @@ def tree_consistent(b):
                 return False
     return True
 
+
 def get_obj_basedir():
-    if os.path.isdir(obj_basedir):
-        return obj_basedir
-    else:
-        return '.'
+    #if os.path.isdir(obj_basedir):
+    #    return obj_basedir
+    #else:
+    #    return '.'
+    return nltk.data.find(obj_basedir)
+
 
 # Guarda un objeto en un archivo, para luego ser cargado con load_obj.
 def save_obj(object, filename):
@@ -58,6 +65,7 @@ def save_obj(object, filename):
     f = open(path, 'w')
     pickle.dump(object, f, pickle.HIGHEST_PROTOCOL)
     f.close()
+
 
 # Carga un objeto guardado en un archivo con save_obj.
 def load_obj(filename):
@@ -69,6 +77,7 @@ def load_obj(filename):
     except IOError:
         object = None
     return object
+
 
 # Carga una lista de objetos guardados en un archivo usando ObjectSaver.
 def load_objs(filename):
