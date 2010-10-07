@@ -37,10 +37,9 @@ class Negra(treebank.SavedTreebank):
     
     def __init__(self, basedir=None):
         if basedir == None:
-            self.basedir = self.default_basedir
-        else:
-            self.basedir = basedir
-        self.reader = BracketParseCorpusReader(self.basedir, 'negra-corpus2.penn', comment_char='%')
+            basedir = self.default_basedir
+        self.basedir = basedir
+        self.reader = BracketParseCorpusReader(basedir, 'negra-corpus2.penn', comment_char='%')
     
     
     def parsed(self, files=None):
