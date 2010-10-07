@@ -16,20 +16,28 @@ import wsj
 import wsj10
 from dep import depset
 
-class DepWSJ10(wsj10.WSJ10):
-    def __init__(self, basedir=None, load=True):
-        wsj10.WSJ10.__init__(self, basedir, load=False)
-        self.filename =  'dwsj10.treebank'
+
+class DepWSJ(wsj10.WSJn):
+    
+    def __init__(self, max_length, basedir=None, load=True):
+        wsj10.WSJn.__init__(self, max_length, basedir, load=False)
+        self.filename = 'dwsj%02i.treebank' % max_length
         if load:
             self.get_trees()
-    
+
     def _generate_trees(self):
-        trees = wsj10.WSJ10._generate_trees(self)
+        trees = wsj10.WSJn._generate_trees(self)
         for t in trees:
             # First find the head for each constituent:
             find_heads(t)
             t.depset = tree_to_depset(t)
         return trees
+
+
+class DepWSJ10(DepWSJ):
+    
+    def __init__(self, basedir=None, load=True):
+        DepWSJ.__init__(self, 10, basedir, load)
 
 
 def find_heads(t):
