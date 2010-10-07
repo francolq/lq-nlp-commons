@@ -4,6 +4,7 @@
 #__author__="francolq"
 #__date__ ="$29-jun-2009 1:13:49$"
 
+import nltk
 from nltk.corpus.reader import dependency
 from nltk import tree
 from nltk import corpus
@@ -52,12 +53,12 @@ class CoNLLTreebank(treebank.Treebank):
 
 class CoNLL06Treebank(CoNLLTreebank):
     def __init__(self, root, files, max_length=None):
-        corpus = dependency.DependencyCorpusReader(root, files)
+        corpus = dependency.DependencyCorpusReader(nltk.data.find('corpora/conll06/data/'+root), files)
         CoNLLTreebank.__init__(self, corpus, None, max_length)
 
 
 class German(CoNLL06Treebank):
-    root = '/Users/francolq/Documents/comp/doctorado/corpus/conll06/data/german/tiger/'
+    root = 'german/tiger/'
     files = ['train/german_tiger_train.conll', \
                 'test/german_tiger_test.conll']
 
@@ -66,11 +67,11 @@ class German(CoNLL06Treebank):
 
     @staticmethod
     def is_punctuation(n):
-        return n['tag'] == 'PUNC'
+        return n['tag'][0] == '$'
 
 
 class Turkish(CoNLL06Treebank):
-    root = '/Users/francolq/Documents/comp/doctorado/corpus/conll06/data/turkish/metu_sabanci/'
+    root = 'turkish/metu_sabanci/'
     files = ['train/turkish_metu_sabanci_train.conll', \
                 'test/turkish_metu_sabanci_test.conll']
     
@@ -83,7 +84,7 @@ class Turkish(CoNLL06Treebank):
 
 
 class Danish(CoNLL06Treebank):
-    root = '/Users/francolq/Documents/comp/doctorado/corpus/conll06/data/danish/ddt/'
+    root = 'danish/ddt/'
     files = ['train/danish_ddt_train.conll', 'test/danish_ddt_test.conll']
 
     def __init__(self, max_length=None):
@@ -92,6 +93,30 @@ class Danish(CoNLL06Treebank):
     @staticmethod
     def is_punctuation(n):
         return n['tag'] == 'XP'
+
+
+class Swedish(CoNLL06Treebank):
+    root = 'swedish/talbanken05/'
+    files = ['train/swedish_talbanken05_train.conll', 'test/swedish_talbanken05_test.conll']
+
+    def __init__(self, max_length=None):
+        CoNLL06Treebank.__init__(self, self.root, self.files, max_length)
+
+    @staticmethod
+    def is_punctuation(n):
+        return n['tag'] == 'IP'
+
+
+class Portuguese(CoNLL06Treebank):
+    root = 'portuguese/bosque/'
+    files = ['treebank/portuguese_bosque_train.conll', 'test/portuguese_bosque_test.conll']
+
+    def __init__(self, max_length=None):
+        CoNLL06Treebank.__init__(self, self.root, self.files, max_length)
+
+    @staticmethod
+    def is_punctuation(n):
+        return n['tag'] == 'punc'
 
 
 class Catalan(CoNLLTreebank):
