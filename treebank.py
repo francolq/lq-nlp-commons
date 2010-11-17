@@ -494,6 +494,13 @@ class Treebank(api.SyntaxCorpusReader):
 EMPTY = Treebank([])
 
 
+def treebank_from_sentences(S):
+    """Returns a treebank with sentences S and trivial trees.
+    """
+    trees = [Tree(tree.Tree('ROOT', [tree.Tree(x, [x]) for x in s])) for s in S]
+    return Treebank(trees)
+
+
 def load_treebank(filename):
     return util.load_obj(filename)
 
