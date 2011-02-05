@@ -11,7 +11,7 @@ import sys
 import nltk
 
 
-obj_basedir = 'francolq'
+obj_basedir = 'lq-nlp-commons'
 
 
 def write_file(filename, content):
@@ -52,11 +52,11 @@ def tree_consistent(b):
 
 
 def get_obj_basedir():
-    #if os.path.isdir(obj_basedir):
-    #    return obj_basedir
-    #else:
-    #    return '.'
-    return nltk.data.find(obj_basedir)
+    try:
+        return nltk.data.find(obj_basedir)
+    except LookupError:
+        os.mkdir(os.path.join(nltk.data.path[0], obj_basedir))
+        return nltk.data.find(obj_basedir)
 
 
 # Guarda un objeto en un archivo, para luego ser cargado con load_obj.
