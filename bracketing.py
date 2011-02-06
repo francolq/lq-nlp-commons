@@ -7,6 +7,7 @@
 import itertools
 import random
 import string
+import math
 
 from nltk import tree
 
@@ -299,7 +300,23 @@ def binary_bracketings(n):
     return map(lambda b: Bracketing(n, set(b[1:])), _binary_bracketings(n))
 
 
-# Devuelve el bracketing rbranch para frase de largo length:
+def binary_bracketings_count(n):
+    """Returns the number of binary bracketings of n leaves (this is, the
+    Catalan number C_{n-1}).
+    """
+    return catalan(n-1)
+
+
+def catalan(n):
+    """Helper for binary_bracketings_count(n).
+    """
+    if n <= 1:
+        return 1
+    else:
+        # http://mathworld.wolfram.com/CatalanNumber.html
+        return catalan(n-1)*2*(2*n-1)/(n+1)
+
+
 def rbranch_bracketing(length, start_index=0):
     """Returns the rbranch bracketing of the given length.
     """
