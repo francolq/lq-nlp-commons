@@ -1,3 +1,8 @@
+# Copyright (C) 2007-2011 Franco M. Luque
+# URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
+# For license information, see LICENSE.txt
+
+
 from __future__ import absolute_import
 # dep/model.py: A general model for dependency parsing (class DepModel), and a
 # general model for projective dependency parsing, with evaluation also as

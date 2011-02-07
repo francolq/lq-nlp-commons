@@ -1,3 +1,7 @@
+# Copyright (C) 2007-2011 Franco M. Luque
+# URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
+# For license information, see LICENSE.txt
+
 # rhead.py: RHEAD baseline for unsupervised dependency parsing.
 
 from dep import model

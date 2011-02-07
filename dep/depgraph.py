@@ -1,5 +1,6 @@
-__author__="francolq"
-__date__ ="$28-jun-2009 20:11:04$"
+# Copyright (C) 2007-2011 Franco M. Luque
+# URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
+# For license information, see LICENSE.txt
 
 from nltk.parse import dependencygraph
 from nltk import tree

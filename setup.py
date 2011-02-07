@@ -1,11 +1,13 @@
-# Copyright (C) 2007-2009 Franco M. Luque
+# Copyright (C) 2007-2011 Franco M. Luque
 # URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
 # For license information, see LICENSE.txt
 
 from distutils.core import setup
 
 setup(name='lq-nlp-commons',
-         version='0.1.0',
+         # Read the following page for advice on version numbering:
+         # http://docs.python.org/distutils/setupscript.html#additional-meta-data
+         version='0.2.0',
          description="Franco M. Luque's Common Python Code for NLP",
          author='Franco M. Luque',
          author_email='francolq@famaf.unc.edu.ar',

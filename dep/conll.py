@@ -1,8 +1,9 @@
+# Copyright (C) 2007-2011 Franco M. Luque
+# URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
+# For license information, see LICENSE.txt
+
 # conll.py: Classes to read CoNLL 2006 and 2007 corpora.
 # TODO: test projectiveness and project the dependency trees.
-#
-#__author__="francolq"
-#__date__ ="$29-jun-2009 1:13:49$"
 
 import nltk
 from nltk.corpus.reader import dependency
