@@ -21,7 +21,9 @@ dep/__init__.py
 dep/conll.py
 dep/depgraph.py
 dep/depset.py
+dep/dnegra.py
 dep/dwsj.py
 dep/lhead.py
 dep/model.py
 dep/rhead.py
+dep/tiger.py

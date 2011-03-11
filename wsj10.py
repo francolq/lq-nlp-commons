@@ -10,6 +10,10 @@ import wsj
 
 
 class WSJn(wsj.WSJ):
+    """Sentences of length <= n after removal of punctuation, ellipsis and
+    currency.
+    To be replaced by the WSJnLex class soon.
+    """
 
     def __init__(self, n, basedir=None, load=True):
         wsj.WSJ.__init__(self, basedir)
@@ -181,28 +185,36 @@ QUE BOSTA, SE USAN COMILLAS SIMPLES CUANDO DEBERIAN SER DOBLES:
 """
 
 
-class WSJnLex(WSJn):
+class WSJnLex(wsj.WSJ):
+    """Lexicalized WSJn. Sentences of length <= n after removal of
+    punctuation, ellipsis and currency.
+    Will replace the WSJn class soon.
+    """
     
-    def __init__(self, n, load=True):
-        wsj.WSJ.__init__(self)
+    def __init__(self, n, basedir=None, load=True):
+        wsj.WSJ.__init__(self, basedir)
         self.n = n
         self.filename = 'wsj%02i.lex_treebank' % n
-        self.tagger = WSJTagger()
         if load:
             self.get_trees()
     
+    def _generate_trees(self):
+        print "Parsing treebank..."
+        f = lambda t: len(t.leaves()) <= self.n
+        m = lambda t: self._prepare(t)
+        trees = [t for t in itertools.ifilter(f, itertools.imap(m, self.parsed()))]
+        return trees
+    
     def _prepare(self, t):
-        # quito puntuacion, ellipsis y monedas, sin quitar las hojas:
-        #t.remove_punctuation()
-        #t.remove_ellipsis()
-        #t.filter_tags(lambda x: x not in wsj.currency_tags_words)
+        # only keep word tags (removes punctuation, ellipsis and currency)
         t.filter_subtrees(lambda t: type(t) == str or len([x for x in t.pos() if x[1] in wsj.word_tags]) > 0)
         return t
 
 
 class WSJ10Lex(WSJnLex):
-    def __init__(self, load=True):
-        WSJnLex.__init__(self, 10, load)
+    
+    def __init__(self, basedir=None, load=True):
+        WSJnLex.__init__(self, 10, basedir, load)
 
 """
 CREO UN ARCHIVO DE TEXTO CON LAS FRASES DEL WSJ10:
