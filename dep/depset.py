@@ -153,7 +153,7 @@ def _all_depsets(n):
 def all_depsets(n):
     """Returns all the dependency sets for a sentence of length n.
     """
-    return map(lambda s: DepSet(n, s), _all_depsets(n))
+    return map(lambda s: DepSet(n, s), _all_depsets(n)[n])
 
 
 def _all_sums(n):

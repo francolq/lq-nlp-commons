@@ -18,22 +18,22 @@ currency_tags_words = ['#', '$', 'C$', 'A$']
 ellipsis = ['*', '*?*', '0', '*T*', '*ICH*', '*U*', '*RNR*', '*EXP*', '*PPA*', '*NOT*']
 punctuation_tags = ['.', ',', ':', '-LRB-', '-RRB-', '\'\'', '``']
 punctuation_words = ['.', ',', ':', '-LRB-', '-RRB-', '\'\'', '``', '--', ';', '-', '?', '!', '...', '-LCB-', '-RCB-']
-# tag de -- - ; ... es :
-# tag de ? ! es .
-# ' no es puntuacion sino POS (pronombre posesivo?)
-# '-LCB-', '-RCB-' son los corchetes
+# the tag of -- - ; ... is :
+# the tag of ? ! is .
+# ' is not punctuation but a POS (possesive pronoun?)
+# '-LCB-', '-RCB-' are square brackets
+# exception: the tree ['07/wsj_0758.mrg', 74] (antepenultimo) uses simple quotes
 
-# el puto arbol ['07/wsj_0758.mrg', 74] (antepenultimo) usa comillas simples
 
-
-# funciona tanto si las hojas son lexico como POS tags.
 def is_ellipsis(s):
+    """Returns True if s is an ellipsis tag or leaf.
+    """
     return s == '-NONE-' or s.partition('-')[0] in ellipsis
 
 
-# funciona tanto si las hojas son lexico como POS tags.
 def is_punctuation(s):
-    # solo comparo con punctuation_words porque incluye a punctuation_tags.
+    """Returns True if s is a punctuation tag or leaf.
+    """
     return s in punctuation_words
 
 
@@ -55,6 +55,16 @@ class WSJSents(bracket_parse.BracketParseCorpusReader):
         # Remove punctuation, ellipsis and currency ($, #) at the same time:
         f = lambda s: filter(lambda x: x[1] in word_tags, s)
         return LazyMap(f, bracket_parse.BracketParseCorpusReader.tagged_sents(self))
+
+    def parsed_sents(self):
+        def f(t):
+            t2 = WSJTree(t)
+            #t2.remove_punctuation()
+            #t2.remove_ellipsis()
+            # Remove punctuation, ellipsis and currency ($, #) at the same time:
+            t2.filter_pos(lambda x, y: y in word_tags)
+            return t2
+        return LazyMap(f, bracket_parse.BracketParseCorpusReader.parsed_sents(self))
 
 
 # TODO: remove this class and rename WSJSents to WSJ.

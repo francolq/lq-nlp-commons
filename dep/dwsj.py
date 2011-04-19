@@ -4,24 +4,25 @@
 
 # dwsj.py: Dependency version of the WSJ corpus.
 
-"""
-from dep.dwsj import *
-import wsj
-tb = wsj.WSJ()
-t = tb.get_tree(2)
-t.leaves()
-# ['Rudolph', 'Agnew', ',', '55', 'years', 'old', 'and', 'former', 'chairman', 'of', 'Consolidated', 'Gold', 'Fields', 'PLC', ',', 'was', 'named', '*-1', 'a', 'nonexecutive', 'director', 'of', 'this', 'British', 'industrial', 'conglomerate', '.']
-find_heads(t)
-t.depset = tree_to_depset(t)
-t.depset.deps
-"""
+from nltk.corpus.reader import bracket_parse
+from nltk.util import LazyMap
 
 import wsj
 import wsj10
 from dep import depset
 
 
-class DepWSJ(wsj10.WSJnLex):
+class DepWSJ(wsj.WSJSents):
+    
+    def parsed_sents(self):
+        def f(t):
+            find_heads(t)
+            t.depset = tree_to_depset(t)
+            return t
+        return LazyMap(f, wsj.WSJSents.parsed_sents(self))
+
+
+class DepWSJn(wsj10.WSJnLex):
     
     def __init__(self, max_length, basedir=None, load=True):
         wsj10.WSJnLex.__init__(self, max_length, basedir, load=False)
@@ -38,10 +39,10 @@ class DepWSJ(wsj10.WSJnLex):
         return trees
 
 
-class DepWSJ10(DepWSJ):
+class DepWSJ10(DepWSJn):
     
     def __init__(self, basedir=None, load=True):
-        DepWSJ.__init__(self, 10, basedir, load)
+        DepWSJn.__init__(self, 10, basedir, load)
 
 
 def find_heads(t):

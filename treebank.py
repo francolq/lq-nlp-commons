@@ -43,68 +43,73 @@ class Tree(tree.Tree):
         lpos = self.treepositions('leaves')
         for pos in lpos:
             self[pos] = f(self[pos])
-    
-    def filter_subtrees(self, f):
+
+    def filter_subtrees(self, f, prune=True):
+        """Removes the subtrees that do not satisfy the predicate f.
+        XXX: Not done in-place. Internally creates a new tree.
+        
+        @param f: A predicate function over trees and strings (for the leaves).
+        @param prune: If True, remove a subtree if it has no children. If False,
+        convert the subtree to a leaf.
+        """
         def recursion(t, f):
-            if not isinstance(t, tree.Tree):
-                return t
-            subtrees = []
-            for st in t:
-                if f(st):
-                    st = recursion(st, f)
-                    subtrees += [st]
-            if subtrees == []:
-                return t.node
+            if f(t):
+                if isinstance(t, tree.Tree):
+                    subtrees = []
+                    for st in t:
+                        st2 = recursion(st, f)
+                        if st2 is not None:
+                            subtrees += [st2]
+                    if subtrees:
+                        return tree.Tree(t.node, subtrees)
+                    elif prune:
+                        return None
+                    else:
+                        return t.node
+                else:
+                    # assert isinstance(t, str)
+                    return t
             else:
-                return tree.Tree(t.node, subtrees)
+                return None
         t = recursion(self, f)
         if isinstance(t, tree.Tree):
             self.__init__(t, self.labels)
         else:
             self.__init__(tree.Tree(t, []), self.labels)
-    
+
     def remove_functions(self):
         self.map_nodes(lambda node: node.split('-')[0])
     
     def remove_leaves(self):
-        self.filter_subtrees(lambda t: isinstance(t, tree.Tree))
+        self.filter_subtrees(lambda t: isinstance(t, tree.Tree), prune=False)
     
-    """def filter_tags(self, valid_tags):
-        def f(t):
-            if isinstance(t, tree.Tree):
-                all_invalid = True
-                for leave in t.leaves():
-                    all_invalid = all_invalid and not (leave in valid_tags)
-                return not all_invalid
-            else:
-                return (t in valid_tags)
-        self.filter_subtrees(f)"""
-    
-    # XXX: esta funcion estaria mejor llamada filter_leaves ya que solo filtra
-    # tags si estos estan en las hojas...
     def filter_tags(self, tag_filter):
-        """tag_filter must be a predicate function over strings.
+        assert False, 'Removed function. Use filter_leaves() or filter_pos().'
+    
+    def filter_leaves(self, f):
+        """Removes from the tree the leaves that do not satisfy f.
+
+        @param f: predicate function over strings.
         """
-        def f(t):
-            if isinstance(t, tree.Tree):
-                all_invalid = True
-                for leave in t.leaves():
-                    all_invalid = all_invalid and not tag_filter(leave)
-                return not all_invalid
-            else:
-                return tag_filter(t)
-        self.filter_subtrees(f)
+        self.filter_subtrees(lambda t: isinstance(t, tree.Tree) or f(t))
+
+    def filter_pos(self, f):
+        """
+        Removes from the tree the pairs (word, pos) that do not satisfy f.
+        
+        @param f: predicate function over pairs of strings (word, pos).
+        """
+        def is_pos_node(t):
+            #assert t, 'Tree with no leaves.'
+            return isinstance(t, tree.Tree) and isinstance(t[0], str)
+        def f2(t):
+            return not is_pos_node(t) or f(t[0], t.node)
+        self.filter_subtrees(f2)
     
     def remove_punctuation(self):
-        def f(t):
-            if isinstance(t, tree.Tree):
-                punctuation = True
-                for leave in t.leaves():
-                    punctuation = punctuation and self.is_punctuation(leave)
-                return not punctuation
-            else:
-                return not self.is_punctuation(t)
-        self.filter_subtrees(f)
+        """Uses self.is_punctuation() that must be overriden in the subclasses.
+        """
+        self.filter_leaves(lambda s: not self.is_punctuation(s))
     
     def is_punctuation(self, s):
         """To be overriden in the subclasses.
@@ -112,15 +117,9 @@ class Tree(tree.Tree):
         return False
     
     def remove_ellipsis(self):
-        def f(t):
-            if isinstance(t, tree.Tree):
-                ellipsis = True
-                for leave in t.leaves():
-                    ellipsis = ellipsis and self.is_ellipsis(leave)
-                return not ellipsis
-            else:
-                return not self.is_ellipsis(t)
-        self.filter_subtrees(f)
+        """Uses self.is_ellipsis() that must be overriden in the subclasses.
+        """
+        self.filter_leaves(lambda s: not self.is_ellipsis(s))
     
     def is_ellipsis(self, s):
         """To be overriden in the subclasses.
