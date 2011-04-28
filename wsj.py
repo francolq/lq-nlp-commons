@@ -46,17 +46,33 @@ class WSJTree(treebank.Tree):
         return is_punctuation(s)
 
 
-# TODO: Rename this class to WSJ.
+# TODO: Rename this class to WSJ. 
+# TODO: Inherit from treebank.Treebank and move some functionality there.
 class WSJSents(bracket_parse.BracketParseCorpusReader):
+    
     def __init__(self):
         bracket_parse.BracketParseCorpusReader.__init__(self, 'wsj_comb', '.*')
+        fileids = self.fileids()
+        self.train_fileids = [s for s in fileids if int(s[:2]) <= 22]
+        self.test_fileids = [s for s in fileids if int(s[:2]) == 23]
+        self.only_pos = False
     
-    def tagged_sents(self):
-        # Remove punctuation, ellipsis and currency ($, #) at the same time:
-        f = lambda s: filter(lambda x: x[1] in word_tags, s)
-        return LazyMap(f, bracket_parse.BracketParseCorpusReader.tagged_sents(self))
+    def sents(self, fileids=None):
+        if self.only_pos:
+            f = lambda s: map(lambda x: x[1], s)
+        else:
+            f = lambda s: map(lambda x: x[0], s)
+        return LazyMap(f, self.tagged_sents(fileids))
 
-    def parsed_sents(self):
+    def tagged_sents(self, fileids=None):
+        # Remove punctuation, ellipsis and currency ($, #) at the same time:
+        if self.only_pos:
+            f = lambda s: [(x[1], x[1]) for x in filter(lambda x: x[1] in word_tags, s)]
+        else:
+            f = lambda s: filter(lambda x: x[1] in word_tags, s)
+        return LazyMap(f, bracket_parse.BracketParseCorpusReader.tagged_sents(self, fileids))
+
+    def parsed_sents(self, fileids=None):
         def f(t):
             t2 = WSJTree(t)
             #t2.remove_punctuation()
@@ -64,7 +80,10 @@ class WSJSents(bracket_parse.BracketParseCorpusReader):
             # Remove punctuation, ellipsis and currency ($, #) at the same time:
             t2.filter_pos(lambda x, y: y in word_tags)
             return t2
-        return LazyMap(f, bracket_parse.BracketParseCorpusReader.parsed_sents(self))
+        return LazyMap(f, bracket_parse.BracketParseCorpusReader.parsed_sents(self, fileids))
+
+    def only_pos_mode(self, value=True):
+        self.only_pos = value
 
 
 # TODO: remove this class and rename WSJSents to WSJ.
@@ -75,9 +94,10 @@ class WSJ(treebank.SavedTreebank):
    
     def __init__(self, basedir=None):
         if basedir == None:
-            self.basedir = self.default_basedir
+            basedir = self.default_basedir
         else:
-            self.basedir = basedir
+            basedir = basedir
+        treebank.SavedTreebank.__init__(self, self.filename, basedir)
         #self.reader = BracketParseCorpusReader(self.basedir, self.get_files())
    
     def get_files(self):

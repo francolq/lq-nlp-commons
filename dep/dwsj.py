@@ -14,12 +14,12 @@ from dep import depset
 
 class DepWSJ(wsj.WSJSents):
     
-    def parsed_sents(self):
+    def parsed_sents(self, fileids=None):
         def f(t):
-            find_heads(t)
+            find_heads(t, label=False)
             t.depset = tree_to_depset(t)
             return t
-        return LazyMap(f, wsj.WSJSents.parsed_sents(self))
+        return LazyMap(f, wsj.WSJSents.parsed_sents(self, fileids))
 
 
 class DepWSJn(wsj10.WSJnLex):
@@ -34,7 +34,7 @@ class DepWSJn(wsj10.WSJnLex):
         trees = wsj10.WSJnLex._generate_trees(self)
         for t in trees:
             # First find the head for each constituent:
-            find_heads(t)
+            find_heads(t, label=False)
             t.depset = tree_to_depset(t)
         return trees
 
@@ -45,17 +45,18 @@ class DepWSJ10(DepWSJn):
         DepWSJn.__init__(self, 10, basedir, load)
 
 
-def find_heads(t):
+def find_heads(t, label=True):
     """Mark heads in the constituent tree t using the Collins PhD Thesis (1999)
-    rules. The heads are marked in every subtree st in the attributes st.node
-    and st.head.
+    rules. The heads are marked in every subtree st in the attribute st.head
+    (and in st.node if label=True).
     """
     for st in t.subtrees():
-        label = st.node.split('-')[0].split('=')[0]
+        parent = st.node.split('-')[0].split('=')[0]
         # the children may be a tree or a leaf (type string):
         children = [(type(x) is str and x) or x.node.split('-')[0] for x in st]
-        st.head = get_head(label, children)-1
-        st.node += '['+children[st.head]+']'
+        st.head = get_head(parent, children)-1
+        if label:
+            st.node += '['+children[st.head]+']'
 
 
 def tree_to_depset(t):

@@ -371,20 +371,34 @@ class Treebank(api.SyntaxCorpusReader):
         if trees is None:
             trees = []
         self.trees = trees
+        self.only_pos = False
     
     def get_trees(self):
         return self.trees
 
-    def sents(self):
+    def sents(self, fileids=None):
+        if self.only_pos:
+            f = lambda t: map(lambda x: x[1], t.pos())
+        else:
+            f = lambda t: t.leaves()
         # LazyMap from nltk.util:
-        return LazyMap(lambda t: t.leaves(),  self.get_trees())
+        return LazyMap(f, self.parsed_sents(fileids))
     
-    def tagged_sents(self):
+    def tagged_sents(self, fileids=None):
+        #def f(s):
+        #    return [(x[0], x[1].partition('[')[0]) for x in s]
         # LazyMap from nltk.util:
-        return LazyMap(lambda t: t.pos(),  self.get_trees())
+        if self.only_pos:
+            f = lambda t: map(lambda x: (x[1], x[1]), t.pos())
+        else:
+            f = lambda t: t.pos()
+        return LazyMap(f,  self.parsed_sents(fileids))
 
-    def parsed_sents(self):
+    def parsed_sents(self, fileids=None):
         return self.get_trees()
+
+    def only_pos_mode(self, value=True):
+        self.only_pos = value
     
     def sent(self, i):
         return self.trees[i].leaves()
@@ -435,15 +449,17 @@ class Treebank(api.SyntaxCorpusReader):
 #            productions += t.productions()
         def concat(l):
             return reduce(lambda x,y: x + y, l)
-        productions = concat([t.productions() for t in self.trees])
+        productions = concat([t.productions() for t in self.parsed_sents()])
+        
         return productions
     
     def get_vocabulary(self):
         """Returns the set of terminals of all the trees.
         """
         result = set()
-        for t in self.trees:
-            result.update(t.leaves())
+        for s in self.sents():
+            result.update(s)
+            
         return result
     
     def word_freqs(self):
@@ -454,6 +470,7 @@ class Treebank(api.SyntaxCorpusReader):
                     d[w] += 1
                 else:
                     d[w] = 1
+        
         return d
     
     def length_freqs(self):
@@ -464,6 +481,7 @@ class Treebank(api.SyntaxCorpusReader):
                 d[l] += 1
             else:
                 d[l] = 1
+        
         return d
     
     def is_punctuation(self, s):
@@ -510,6 +528,7 @@ class SavedTreebank(Treebank):
     def __init__(self, filename, basedir):
         self.filename = filename
         self.basedir = basedir
+        Treebank.__init__(self)
     
     def get_trees(self):
         if self.trees == []:
