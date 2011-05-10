@@ -53,8 +53,8 @@ class WSJSents(bracket_parse.BracketParseCorpusReader):
     def __init__(self):
         bracket_parse.BracketParseCorpusReader.__init__(self, 'wsj_comb', '.*')
         fileids = self.fileids()
-        self.train_fileids = [s for s in fileids if int(s[:2]) <= 22]
-        self.test_fileids = [s for s in fileids if int(s[:2]) == 23]
+        self.train_fileids = [s for s in fileids if int(s[:2]) >= 2 and int(s[:2]) <= 22]
+        self.test_fileids = [s for s in fileids if s.startswith('24')]
         self.only_pos = False
     
     def sents(self, fileids=None):
