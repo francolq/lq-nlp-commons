@@ -2,7 +2,7 @@
 # URL: <http://www.cs.famaf.unc.edu.ar/~francolq/>
 # For license information, see LICENSE.txt
 
-dist:
+dist: dist
 	python setup.py sdist
 
 clean:
