@@ -237,134 +237,29 @@ class Tree(tree.Tree):
         return result
 
 
-def measures(gold, parse):
-    result = labelled_measures(gold, parse)
-    bm = bracketed_measures(gold, parse)
-    result.update(bm)
-    return result
+class AbstractTreebank(api.SyntaxCorpusReader):
+
+    def query(self, l=None, fileids=None, res=1):
+        """Returns elements of the treebank that satisfy the given conditions.
+
+        @param l: Length of the sentence.
+        @param res: Number of results.
+        """
+        result = []
+        for s, t in zip(self.tagged_sents(fileids), self.parsed_sents(fileids)):
+            if l is not None and len(s) == l:
+                result.append((s, t))
+                res -= 1
+            if res == 0:
+                if len(result) == 1:
+                    return result[0]
+                else:
+                    return result
 
 
-def labelled_measures(gold, parse):
-    gold_spans = gold.labelled_spannings(leaves=False, root=False)
-    parse_spans = parse.labelled_spannings(leaves=False, root=False)
-
-    hits, l_hits, cb = 0, 0, 0
-    for span in parse_spans:
-        n = 0
-        # Primero busco coincidencia sin label:
-        while n < len(gold_spans) and span[1] != gold_spans[n][1]:
-            n += 1
-        if n < len(gold_spans):
-            # Encontre coincidencia sin label. Busco con label:
-            hits += 1
-            while n < len(gold_spans) and span != gold_spans[n]:
-                n += 1
-            if n < len(gold_spans):
-                l_hits += 1
-        
-        # Vemos si tiene brackets consistentes:
-        def consistent(span1, span2):
-            (i1, j1) = span1[1]
-            (i2, j2) = span2[1]
-            j1 -= 1
-            j2 -= 1
-            # Disjuntos, 1 dentro de 2 o 2 dentro de 1
-            return j1 < i2 or j2 < i1 or \
-                   (i2 <= i1 and j1 <= j2) or \
-                   (i1 <= i2 and j2 <= j1)
-        n = 0
-        while n < len(gold_spans) and consistent(span, gold_spans[n]):
-            n += 1
-        if n == len(gold_spans):
-            cb += 1
-    
-    return {'labelled_precision': float(l_hits) / float(len(parse_spans)),
-            'labelled_recall': float(l_hits) / float(len(gold_spans)),
-            #'bad_bracketed_precision': float(hits) / float(len(parse_spans)),
-            #'bad_bracketed_recall': float(hits) / float(len(gold_spans)),
-            #'bad_consistent_brackets_recall': float(cb) / float(len(gold_spans))
-            }
-
-
-def bracketed_measures(gold, parse):
-    """Unlabeled measures.
+class Treebank(AbstractTreebank):
+    """List backed treebank. The elements are assumed to be Tree instances.
     """
-    gold_spans = gold.spannings(leaves=False)
-    parse_spans = parse.spannings(leaves=False)
-    
-    # XXX: Podria hacer hits = len(s.intersection(t)) (o len(s&t)).
-    hits, cb = 0, 0
-    for span in parse_spans:
-        if span in gold_spans:
-            # Encontre coincidencia sin label.
-            hits += 1
-        
-        # Vemos si tiene brackets consistentes:
-        def consistent(span1, span2):
-            (i1, j1) = span1
-            (i2, j2) = span2
-            j1 -= 1
-            j2 -= 1
-            # Disjuntos, 1 dentro de 2 o 2 dentro de 1
-            return j1 < i2 or j2 < i1 or \
-                   (i2 <= i1 and j1 <= j2) or \
-                   (i1 <= i2 and j2 <= j1)
-        # XXX: si aparece algun not consistent puedo terminar.
-        n = 0
-        # XXX: no me gusta usar break.
-        for g_span in gold_spans:
-            if consistent(span, g_span):
-                n += 1
-            else:
-                break
-        if n == len(gold_spans):
-            cb += 1
-    
-    return {'bracketed_precision': float(hits) / float(len(parse_spans)),
-            'bracketed_recall': float(hits) / float(len(gold_spans)),
-            'consistent_brackets_recall': float(cb) / float(len(gold_spans))}
-
-
-def empty_measures():
-    return {'labelled_precision': 0.0,
-            'bracketed_precision': 0.0,
-            'labelled_recall': 0.0,
-            'bracketed_recall': 0.0,
-            'consistent_brackets_recall': 0.0, 
-            #'bad_bracketed_precision': 0.0,
-            #'bad_bracketed_recall': 0.0,
-            #'bad_consistent_brackets_recall': 0.0
-            }
-            
-"""def labelled_precision(gold, parse):
-    return precision(gold, parse, labelled=True)
-
-
-def precision(gold, parse, labelled=True):
-    gold_spans = gold.spannings(leaves=False, root=False)
-    parse_spans = parse.spannings(leaves=False, root=False)
-    hits = span_hits_count(gold_spans, parse_spans, labelled)
-    return float(hits) / float(len(parse_spans))
-def span_hits_count(gold_spans, parse_spans, labelled=False):
-    #gold_spans = gold.spannings(leaves=False, root=False)
-    #parse_spans = parse.spannings(leaves=False, root=False)
-#    for (label, (i,j)) in parse_spans:
-    if labelled:
-        aux = 0
-    else:
-        aux = 1
-    hits = 0
-    for span in parse_spans:
-        n = 0
-        while n < len(gold_spans) and span[aux:] != gold_spans[n][aux:]:
-            n += 1
-        if n < len(gold_spans):
-            hits += 1
-    return hits
-"""
-
-
-class Treebank(api.SyntaxCorpusReader):
     trees = None
     
     def __init__(self, trees=None):
@@ -385,8 +280,6 @@ class Treebank(api.SyntaxCorpusReader):
         return LazyMap(f, self.parsed_sents(fileids))
     
     def tagged_sents(self, fileids=None):
-        #def f(s):
-        #    return [(x[0], x[1].partition('[')[0]) for x in s]
         # LazyMap from nltk.util:
         if self.only_pos:
             f = lambda t: map(lambda x: (x[1], x[1]), t.pos())

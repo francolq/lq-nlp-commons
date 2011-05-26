@@ -4,8 +4,6 @@
 
 # depset.py: Dependency set.
 
-import util
-
 
 class DepSet:
     
@@ -24,15 +22,8 @@ def from_string(s):
     """
     >>> d = from_string('[(0,3), (1,0), (2,1), (3,-1)]\n')
     """
-    """t = s[1:].split()
-    l = len(t)
-    deps = []
-    for x in t:
-        y = x[1:-2].split(',')
-        deps += [(int(y[0]), int(y[1]))]"""
-    deps = util.safe_eval(s)
-    l = len(deps)
-    return DepSet(l, deps)
+    deps = eval(s)
+    return DepSet(len(deps), deps)
 
 
 def deptree_to_depset(t):
@@ -47,6 +38,25 @@ def lhead_depset(length):
 def rhead_depset(length):
     deps = [(i, i+1) for i in range(length-1)] + [(length-1, -1)]
     return DepSet(length, deps)
+
+
+def binary_depsets(n):
+    """Returns all the binary dependency trees for a sentence of length n.
+    """
+    return map(lambda s: DepSet(n, s), _binary_depsets(n))
+
+
+def all_depsets(n):
+    """Returns all the projectable dependency sets for a sentence of length n.
+    """
+    depsets = _all_depsets(n)[n]
+    # XXX: remove duplicates
+    result = []
+    for s in depsets:
+        if s not in result:
+            result.append(s)
+    return result
+    #return map(lambda s: DepSet(n, s), _all_depsets(n)[n])
 
 
 def _binary_depsets(n):
@@ -69,20 +79,15 @@ def _binary_depsets(n):
         return result
 
 
-def binary_depsets(n):
-    """Returns all the binary dependency trees for a sentence of length n.
-    """
-    return map(lambda s: DepSet(n, s), _binary_depsets(n))
-
-
 def _all_depsets(n):
     """Helper for all_depsets.
+    FIXME: returns duplicate elements if n >= 4.
     """
     # Dynamically programmed:
     depsets = {1: [[(0, -1)]]}
     sums = _all_sums(n)
     sums[0] = [[]]
-    
+
     for i in range(2, n+1):
         result = []
         for j in range(0, i):
@@ -121,13 +126,11 @@ def _all_depsets(n):
 
             #lres = map(lambda l: [(p, (q!=-1 and q) or j) for (p,q) in l], lres)
             #rres = map(lambda l: [(p+j+1, (q!=-1 and (q+j+1)) or j) for (p,q) in l], rres)
-            
+
             result += [l+[(j, -1)]+r for l in lres for r in rres]
         depsets[i] = result
 
     return depsets
-
-            
     """if n == 0:
         return [[]]
     elif n == 1:
@@ -137,9 +140,9 @@ def _all_depsets(n):
         for i in range(n):
             lres = [[]]
             for lsplits in range(0, i):
-                
+
                 lres = _all_depsets(i)
-            
+
 
             rres = _all_depsets(n-1-i)
             lres = map(lambda l: [(j, (k!=-1 and k) or i) for (j,k) in l], lres)
@@ -148,12 +151,6 @@ def _all_depsets(n):
             result += [l+[(i, -1)]+r for l in lres for r in rres]
 
         return result"""
-
-
-def all_depsets(n):
-    """Returns all the dependency sets for a sentence of length n.
-    """
-    return map(lambda s: DepSet(n, s), _all_depsets(n)[n])
 
 
 def _all_sums(n):
