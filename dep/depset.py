@@ -81,7 +81,7 @@ def _binary_depsets(n):
 
 def _all_depsets(n):
     """Helper for all_depsets.
-    FIXME: returns duplicate elements if n >= 4.
+    FIXME: returns duplicate and missing elements if n >= 4.
     """
     # Dynamically programmed:
     depsets = {1: [[(0, -1)]]}
@@ -174,3 +174,60 @@ def _all_sums(n):
         sums[i] = l
     
     return sums
+
+
+def all_depsets2(n):
+    chart = {}
+    for i in range(n):
+        chart[i, i+1, 'lc'] = [[]]
+        chart[i, i+1, 'rc'] = [[]]
+
+    for width in range(2, n+1):
+        for i in range(n-width+1):
+            k = i + width
+
+            # combination B (produces incomplete spans)
+            chart[i, k, 'li'] = []
+            chart[i, k, 'ri'] = []
+            for j in range(i+1, k):
+                c1 = chart[i, j, 'lc']
+                c2 = chart[j, k, 'rc']
+                c3 = [x+y for x in c1 for y in c2]
+                # produce a li
+                chart[i, k, 'li'] += map(lambda z: z+[(k-1, i)], c3)
+                # produce a ri
+                chart[i, k, 'ri'] += map(lambda z: [(i, k-1)]+z, c3)
+
+            # combination A (produces complete spans)
+            chart[i, k, 'lc'] = []
+            for j in range(i+2, k+1):
+                # consider combination of (i,j) with (j,k):
+                c1 = chart[i, j, 'li']
+                c2 = chart[j-1, k, 'lc']
+                chart[i, k, 'lc'] += [x+y for x in c1 for y in c2]
+            chart[i, k, 'rc'] = []
+            for j in range(i, k-1):
+                # consider combination of (i,j) with (j,k):
+                c1 = chart[i, j+1, 'rc']
+                c2 = chart[j, k, 'ri']
+                chart[i, k, 'rc'] += [x+y for x in c1 for y in c2]
+
+    # ad-hoc code for the root:
+    chart[n, n+1, 'rc'] = [[]]
+    k = n+1
+    for i in range(n-1, -1, -1):
+            # combination B (produces incomplete spans)
+            j = k-1
+            c1 = chart[i, j, 'lc']
+            c2 = chart[j, k, 'rc']
+            c3 = [x+y for x in c1 for y in c2]
+            chart[i, k, 'ri'] = map(lambda z: [(i, -1)]+z, c3)
+
+            # combination A (produces complete spans)
+            chart[i, k, 'rc'] = []
+            for j in range(i, k-1):
+                c1 = chart[i, j+1, 'rc']
+                c2 = chart[j, k, 'ri']
+                chart[i, k, 'rc'] += [x+y for x in c1 for y in c2]
+
+    return chart[0, n+1, 'rc']
