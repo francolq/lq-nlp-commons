@@ -47,8 +47,8 @@ class WSJTree(treebank.Tree):
 
 
 # TODO: Rename this class to WSJ. 
-# TODO: Inherit from treebank.Treebank and move some functionality there.
-class WSJSents(bracket_parse.BracketParseCorpusReader):
+# TODO: move some functionality to AbstractTreebank.
+class WSJSents(bracket_parse.BracketParseCorpusReader, treebank.AbstractTreebank):
     
     def __init__(self):
         bracket_parse.BracketParseCorpusReader.__init__(self, 'wsj_comb', '.*')

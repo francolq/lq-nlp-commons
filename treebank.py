@@ -237,17 +237,21 @@ class Tree(tree.Tree):
         return result
 
 
-class AbstractTreebank(api.SyntaxCorpusReader):
+#class AbstractTreebank(api.SyntaxCorpusReader):
+class AbstractTreebank:
 
-    def query(self, l=None, fileids=None, res=1):
-        """Returns elements of the treebank that satisfy the given conditions.
+    def __init__(self):
+        pass
+    
+    def pquery(self, p, fileids=None, res=1):
+        """Returns elements of the treebank that satisfy the predicate p.
 
-        @param l: Length of the sentence.
+        @param p: Predicate that takes a tagged_sent and a parsed_sent.
         @param res: Number of results.
         """
         result = []
         for s, t in zip(self.tagged_sents(fileids), self.parsed_sents(fileids)):
-            if l is not None and len(s) == l:
+            if p(s, t):
                 result.append((s, t))
                 res -= 1
             if res == 0:
@@ -255,14 +259,77 @@ class AbstractTreebank(api.SyntaxCorpusReader):
                     return result[0]
                 else:
                     return result
+        return result
+    
+    def psentquery(self, p, fileids=None, res=1):
+        """Returns sentences of the treebank that satisfy the predicate p.
+
+        @param p: Predicate that takes a tagged_sent.
+        @param res: Number of results.
+        """
+        result = []
+        for s in self.tagged_sents(fileids):
+            if p(s):
+                result.append(s)
+                res -= 1
+            if res == 0:
+                if len(result) == 1:
+                    return result[0]
+                else:
+                    return result
+        return result
+
+    def query(self, l=None, fileids=None, res=1):
+        """Returns elements of the treebank that satisfy the given conditions.
+
+        @param l: Length of the sentence.
+        @param res: Number of results.
+        """
+        if l is not None:
+            return self.pquery(lambda s, t: len(s) == l, fileids, res)
+        else:
+            return self.pquery(lambda s, t: True, fileids, res)
+    
+    def vocabulary(self):
+        """Returns the set of terminals of all the trees.
+        """
+        result = set()
+        for s in self.sents():
+            result.update(s)
+
+        return result
+
+    def word_freqs(self):
+        d = {}
+        for s in self.sents():
+            for w in s:
+                if w in d:
+                    d[w] += 1
+                else:
+                    d[w] = 1
+
+        return d
+
+    def length_freqs(self):
+        d = {}
+        for s in self.sents():
+            l = len(s)
+            if l in d:
+                d[l] += 1
+            else:
+                d[l] = 1
+
+        return d
 
 
+# TODO: Rename this class to ListTreebank.
 class Treebank(AbstractTreebank):
     """List backed treebank. The elements are assumed to be Tree instances.
     """
     trees = None
     
     def __init__(self, trees=None):
+        AbstractTreebank.__init__(self)
         if trees is None:
             trees = []
         self.trees = trees
@@ -345,38 +412,7 @@ class Treebank(AbstractTreebank):
         productions = concat([t.productions() for t in self.parsed_sents()])
         
         return productions
-    
-    def get_vocabulary(self):
-        """Returns the set of terminals of all the trees.
-        """
-        result = set()
-        for s in self.sents():
-            result.update(s)
-            
-        return result
-    
-    def word_freqs(self):
-        d = {}
-        for s in self.sents():
-            for w in s:
-                if w in d:
-                    d[w] += 1
-                else:
-                    d[w] = 1
         
-        return d
-    
-    def length_freqs(self):
-        d = {}
-        for s in self.sents():
-            l = len(s)
-            if l in d:
-                d[l] += 1
-            else:
-                d[l] = 1
-        
-        return d
-    
     def is_punctuation(self, s):
         """To be overriden in the subclasses.
         """
@@ -390,6 +426,7 @@ class Treebank(AbstractTreebank):
     def find_sent(self, ss):
         """Returns the indexes of the sentences that contains the 
         sequence of words ss.
+        XXX: remove or move to AbstractTreebank.
         """
         ss = ' '.join(ss)
         l = []
