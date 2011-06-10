@@ -101,10 +101,10 @@ class WSJ(treebank.SavedTreebank):
         #self.reader = BracketParseCorpusReader(self.basedir, self.get_files())
    
     def get_files(self):
-        l = os.listdir(self.basedir)
+        l = sorted(os.listdir(self.basedir))
         files = []
         for d in l:
-            files = files + map(lambda s: d+'/'+s, os.listdir(self.basedir+'/'+d))
+            files = files + map(lambda s: d+'/'+s, sorted(os.listdir(self.basedir+'/'+d)))
         return files
    
     """def parsed(self, files=None):

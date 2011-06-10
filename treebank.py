@@ -493,7 +493,7 @@ class SavedTreebank(Treebank):
         @rtype: iterator over L{tree}
         """
         if files is None:
-            files = os.listdir(self.basedir)
+            files = sorted(os.listdir(self.basedir))
         
         # Just one file to process?  If so convert to a tuple so we can iterate
         if isinstance(files, str):
