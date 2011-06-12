@@ -27,9 +27,14 @@ class Tree(tree.Tree):
     
     def copy(self, deep=False):
         if not deep:
-            return self.__class__(self, self.labels)
+            #return self.__class__(self, self.labels)
+            t = self.__class__(self, self.labels)
         else:
-            return self.__class__(tree.Tree.convert(self), self.labels)
+            #return self.__class__(tree.Tree.convert(self), self.labels)
+            t = self.__class__(tree.Tree.convert(self), self.labels)
+        if hasattr(self, 'depset'):
+            t.depset = self.depset
+        return t
     
     def map_nodes(self, f):
         lpos = self.treepositions()
@@ -304,18 +309,18 @@ class AbstractTreebank:
         else:
             return self.pquery(lambda s, t: True, fileids, res)
     
-    def vocabulary(self):
+    def vocabulary(self, fileids=None):
         """Returns the set of terminals of all the trees.
         """
         result = set()
-        for s in self.sents():
+        for s in self.sents(fileids):
             result.update(s)
 
         return result
 
-    def word_freqs(self):
+    def word_freqs(self, fileids=None):
         d = {}
-        for s in self.sents():
+        for s in self.sents(fileids):
             for w in s:
                 if w in d:
                     d[w] += 1
@@ -371,7 +376,11 @@ class Treebank(AbstractTreebank):
     def parsed_sents(self, fileids=None):
         if self.only_pos:
             # lambda with side effects!:
-            f = lambda t: t.map_pos(lambda x, y: (y, y)) or t
+            #f = lambda t: t.map_pos(lambda x, y: (y, y)) or t
+            def f(t):
+                t2 = t.copy(deep=True)
+                t2.map_pos(lambda x, y: (y, y))
+                return t2
             return LazyMap(f, self.get_trees())
         else:
             return self.get_trees()
