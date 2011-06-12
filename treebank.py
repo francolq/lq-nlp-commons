@@ -40,9 +40,26 @@ class Tree(tree.Tree):
                 self[pos] = f(self[pos])
     
     def map_leaves(self, f):
+        """
+        Maps f to the leaves of the trees.
+
+        @param f: function over strings.
+        """
         lpos = self.treepositions('leaves')
         for pos in lpos:
             self[pos] = f(self[pos])
+
+    def map_pos(self, f):
+        """
+        Maps f to the pairs (word, pos).
+
+        @param f: function over two strings (word and pos) returning a pair.
+        """
+        lpos = self.treepositions('leaves')
+        for pos in lpos:
+            st = self[pos[:-1]]
+            w, t = st[0], st.node
+            st[0], st.node = f(w, t)
 
     def filter_subtrees(self, f, prune=True):
         """Removes the subtrees that do not satisfy the predicate f.
@@ -83,9 +100,6 @@ class Tree(tree.Tree):
     def remove_leaves(self):
         self.filter_subtrees(lambda t: isinstance(t, tree.Tree), prune=False)
     
-    def filter_tags(self, tag_filter):
-        assert False, 'Removed function. Use filter_leaves() or filter_pos().'
-    
     def filter_leaves(self, f):
         """Removes from the tree the leaves that do not satisfy f.
 
@@ -97,7 +111,7 @@ class Tree(tree.Tree):
         """
         Removes from the tree the pairs (word, pos) that do not satisfy f.
         
-        @param f: predicate function over pairs of strings (word, pos).
+        @param f: predicate function over two strings (word and pos).
         """
         def is_pos_node(t):
             #assert t, 'Tree with no leaves.'
@@ -355,7 +369,12 @@ class Treebank(AbstractTreebank):
         return LazyMap(f,  self.parsed_sents(fileids))
 
     def parsed_sents(self, fileids=None):
-        return self.get_trees()
+        if self.only_pos:
+            # lambda with side effects!:
+            f = lambda t: t.map_pos(lambda x, y: (y, y)) or t
+            return LazyMap(f, self.get_trees())
+        else:
+            return self.get_trees()
 
     def only_pos_mode(self, value=True):
         self.only_pos = value

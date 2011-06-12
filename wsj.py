@@ -73,12 +73,16 @@ class WSJSents(bracket_parse.BracketParseCorpusReader, treebank.AbstractTreebank
         return LazyMap(f, bracket_parse.BracketParseCorpusReader.tagged_sents(self, fileids))
 
     def parsed_sents(self, fileids=None):
+        # XXX: maybe all this processing can be done at a lower level for more
+        # efficient code:
         def f(t):
             t2 = WSJTree(t)
             #t2.remove_punctuation()
             #t2.remove_ellipsis()
             # Remove punctuation, ellipsis and currency ($, #) at the same time:
             t2.filter_pos(lambda x, y: y in word_tags)
+            if self.only_pos:
+                t2.map_pos(lambda x, y: (y, y))
             return t2
         return LazyMap(f, bracket_parse.BracketParseCorpusReader.parsed_sents(self, fileids))
 
