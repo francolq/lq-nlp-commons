@@ -79,8 +79,9 @@ def load_obj(filename):
     return object
 
 
-# Carga una lista de objetos guardados en un archivo usando ObjectSaver.
 def load_objs(filename):
+    """Loads an object list previously saved with ObjectSaver.
+    """
     path = os.path.join(get_obj_basedir(), filename)
     try:
         f = open(path, 'r')
@@ -93,6 +94,25 @@ def load_objs(filename):
     except IOError:
         objects = None
     return objects
+
+
+def iter_load_objs(filename):
+    """Iterator over an object list previously saved with ObjectSaver.
+    """
+    path = os.path.join(get_obj_basedir(), filename)
+    try:
+        f = open(path, 'r')
+        #objects = []
+        try:
+            while True:
+                #objects += [pickle.load(f)]
+                yield pickle.load(f)
+        except EOFError: # It will always be thrown
+            f.close()
+    except IOError:
+        pass
+        #objects = None
+    #return objects
 
 
 class ObjectSaver:

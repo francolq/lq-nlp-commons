@@ -10,6 +10,7 @@ import itertools
 from nltk import tree
 from nltk.corpus.reader import api
 from nltk.util import LazyMap
+from nltk.corpus.reader.util import PickleCorpusView
 
 import util
 
@@ -366,11 +367,11 @@ class Treebank(AbstractTreebank):
         return LazyMap(f, self.parsed_sents(fileids))
     
     def tagged_sents(self, fileids=None):
-        # LazyMap from nltk.util:
         if self.only_pos:
             f = lambda t: map(lambda x: (x[1], x[1]), t.pos())
         else:
             f = lambda t: t.pos()
+        # LazyMap from nltk.util:
         return LazyMap(f,  self.parsed_sents(fileids))
 
     def parsed_sents(self, fileids=None):
@@ -381,6 +382,7 @@ class Treebank(AbstractTreebank):
                 t2 = t.copy(deep=True)
                 t2.map_pos(lambda x, y: (y, y))
                 return t2
+            # LazyMap from nltk.util:
             return LazyMap(f, self.get_trees())
         else:
             return self.get_trees()
@@ -480,7 +482,48 @@ def load_treebank(filename):
     return util.load_obj(filename)
 
 
+class PickledTreebank(AbstractTreebank):
+    """A treebank with pickled trees.
+    TODO: will replace SavedTreebank in the future.
+    """
+
+    def __init__(self, filename, parsed_sents=None):
+        """
+        @param filename: Filename for the pickled objects.
+        @param parsed_sents: Generator object of the trees to be pickled. Used
+        only if the file does not exist.
+        """
+        AbstractTreebank.__init__(self)
+        self.filename = filename
+        self.path = path = os.path.join(util.get_obj_basedir(), filename)
+
+        if not os.access(path, os.R_OK):
+            print 'Saving treebank {0}...'.format(filename)
+            # http://nltk.googlecode.com/svn/trunk/doc/api/nltk.corpus.reader.util.PickleCorpusView-class.html
+            PickleCorpusView.write(parsed_sents, path)
+            #saver = util.ObjectSaver(filename)
+            #for t in tb.parsed_sents():
+            #    saver.save_obj(t)
+            #saver.close()
+
+        self.parsed_sents_seq = PickleCorpusView(path)
+
+    def sents(self):
+        # LazyMap from nltk.util:
+        return LazyMap(lambda t: t.leaves(), self.parsed_sents())
+
+    def tagged_sents(self):
+        # LazyMap from nltk.util:
+        return LazyMap(lambda t: t.pos(),  self.parsed_sents())
+
+    def parsed_sents(self):
+        return self.parsed_sents_seq
+
+
 class SavedTreebank(Treebank):
+    """A treebank with the trees serialized in a file.
+    XXX: Deprecated. Use PickledTreebank instead.
+    """
     trees = []
     
     def __init__(self, filename, basedir):
