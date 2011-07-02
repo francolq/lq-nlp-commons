@@ -27,6 +27,15 @@ class DepGraph(dependencygraph.DependencyGraph):
     def pos(self):
         return [(node['word'], node['tag']) for node in self.nodelist[1:]]
 
+    def map_pos(self, f):
+        """
+        Maps f to the pairs (word, pos).
+
+        @param f: function over two strings (word and pos) returning a pair.
+        """
+        for node in self.nodelist[1:]:
+            node['word'], node['tag'] = f(node['word'], node['tag'])
+
     def remove_leaves(self, f):
         """f must be a function that takes a node dict and returns a boolean.
         """

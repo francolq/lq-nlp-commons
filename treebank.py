@@ -320,13 +320,30 @@ class AbstractTreebank:
         return result
 
     def word_freqs(self, fileids=None):
+        """Returns a dictionary with lowercased word counts.
+        """
         d = {}
         for s in self.sents(fileids):
             for w in s:
+                w = w.lower()
                 if w in d:
                     d[w] += 1
                 else:
                     d[w] = 1
+
+        return d
+
+    def tagged_word_freqs(self, fileids=None):
+        """Returns a dictionary with lowercased tagged word counts.
+        """
+        d = {}
+        for s in self.tagged_sents(fileids):
+            for x in s:
+                x = (x[0].lower(), x[1])
+                if x in d:
+                    d[x] += 1
+                else:
+                    d[x] = 1
 
         return d
 

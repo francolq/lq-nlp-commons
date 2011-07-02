@@ -8,13 +8,14 @@ from nltk.corpus.reader import bracket_parse
 from nltk.corpus.reader import dependency
 from nltk.util import LazyMap
 
+import treebank
 import wsj
 import wsj10
 from dep import depset
 from dep import depgraph
 
 
-class DWSJ(dependency.DependencyCorpusReader):
+class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
     root = 'ptb'
     files = ['ptb.train', 'ptb.val', 'ptb.test']
     train_fileids = 'ptb.train'
@@ -41,6 +42,7 @@ class DWSJ(dependency.DependencyCorpusReader):
     def parsed_sents(self, fileids=None):
         def f(t):
             # discard punctuation and currency:
+            # XXX: use depgraph.DepGraph.remove_leaves()?
             nodelist = t.nodelist
             new_nodelist = [nodelist[0]]
             i = 1
