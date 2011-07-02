@@ -5,11 +5,72 @@
 # dwsj.py: Dependency version of the WSJ corpus.
 
 from nltk.corpus.reader import bracket_parse
+from nltk.corpus.reader import dependency
 from nltk.util import LazyMap
 
 import wsj
 import wsj10
 from dep import depset
+from dep import depgraph
+
+
+class DWSJ(dependency.DependencyCorpusReader):
+    root = 'ptb'
+    files = ['ptb.train', 'ptb.val', 'ptb.test']
+    train_fileids = 'ptb.train'
+    test_fileids = 'ptb.val'
+
+    def __init__(self):
+        dependency.DependencyCorpusReader.__init__(self, self.root, self.files)
+
+    def sents(self, fileids=None):
+        #if self.only_pos:
+        #    f = lambda s: map(lambda x: x[1], s)
+        #else:
+        f = lambda s: map(lambda x: x[0], s)
+        return LazyMap(f, self.tagged_sents(fileids))
+
+    def tagged_sents(self, fileids=None):
+        # Remove punctuation, ellipsis and currency ($, #) at the same time:
+        #if self.only_pos:
+        #    f = lambda s: [(x[1], x[1]) for x in filter(lambda x: x[1] in word_tags, s)]
+        #else:
+        f = lambda s: filter(lambda x: x[1] in wsj.word_tags, s)
+        return LazyMap(f, dependency.DependencyCorpusReader.tagged_sents(self, fileids))
+
+    def parsed_sents(self, fileids=None):
+        def f(t):
+            # discard punctuation and currency:
+            nodelist = t.nodelist
+            new_nodelist = [nodelist[0]]
+            i = 1
+            for node_dict in nodelist[1:]:
+                if node_dict['tag'] in wsj.word_tags:
+                    new_nodelist += [node_dict]
+                    node_dict['address'] = i
+                    i += 1
+                else:
+                    node_dict['address'] = -1
+            for node_dict in new_nodelist:
+                if 'head' in node_dict:
+                    node_dict['head'] = nodelist[node_dict['head']]['address']
+                deps = node_dict['deps']
+                node_dict['deps'] = []
+                for d in deps:
+                    i = nodelist[d]['address']
+                    if i != -1:
+                        node_dict['deps'] += [i]
+            t.nodelist = new_nodelist
+
+            # wrap into depgraph.DepGraph:
+            t = depgraph.DepGraph(t)
+
+            # attach depset:
+            t.depset = depset.from_depgraph(t)
+
+            return t
+        return LazyMap(f, dependency.DependencyCorpusReader.parsed_sents(self, fileids))
+        
 
 
 class DepWSJ(wsj.WSJSents):
@@ -20,6 +81,14 @@ class DepWSJ(wsj.WSJSents):
             t.depset = tree_to_depset(t)
             return t
         return LazyMap(f, wsj.WSJSents.parsed_sents(self, fileids))
+
+    def write_deps(self, filename, fileids=None):
+        """Writes the dependencies in a text file, one by line.
+        """
+        f = open(filename, 'w')
+        for t in self.parsed_sents():
+            f.write(' '.join(str(d[1]) for d in t.depset.deps)+'\n')
+        f.close()
 
 
 class DepWSJn(wsj10.WSJnLex):

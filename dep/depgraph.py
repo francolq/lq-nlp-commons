@@ -8,12 +8,21 @@ from nltk import tree
 import treebank
 
 class DepGraph(dependencygraph.DependencyGraph):
+    """DependencyGraph (nltk.parse.dependencygraph) wrapper with additional
+    methods.
+    """
 
     def __init__(self, nltk_depgraph):
+        """
+        @param nltk_depgraph: nltk.parse.dependencygraph.DependencyGraph
+        instance."""
         dependencygraph.DependencyGraph.__init__(self)
         self.nodelist = nltk_depgraph.nodelist
         self.root = nltk_depgraph.root
         self.stream = nltk_depgraph.stream
+    
+    def pos(self):
+        return [(node['word'], node['tag']) for node in self.nodelist[1:]]
 
     def remove_leaves(self, f):
         """f must be a function that takes a node dict and returns a boolean.

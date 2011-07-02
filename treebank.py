@@ -341,6 +341,14 @@ class AbstractTreebank:
 
         return d
 
+    def write_sents(self, filename, fileids=None):
+        """Writes the sentences in a text file, one by line.
+        """
+        f = open(filename, 'w')
+        for s in self.sents():
+            f.write(' '.join(s)+'\n')
+        f.close()
+
 
 # TODO: Rename this class to ListTreebank.
 class Treebank(AbstractTreebank):
