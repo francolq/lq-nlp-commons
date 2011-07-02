@@ -491,41 +491,61 @@ def load_treebank(filename):
 
 
 class PickledTreebank(AbstractTreebank):
-    """A treebank with pickled trees.
-    TODO: will replace SavedTreebank in the future.
+    """A treebank with pickled trees. Recognizes if the treebank to be pickled
+    has train_fileids and/or test_fileids set.
+    
+    TODO: should replace SavedTreebank in the future.
     """
-
-    def __init__(self, filename, parsed_sents=None):
+    
+    def __init__(self, filename, tb):
         """
-        @param filename: Filename for the pickled objects.
-        @param parsed_sents: Generator object of the trees to be pickled. Used
-        only if the file does not exist.
+        @param filename: Filename prefix for the pickled objects.
+        @param tb: Treebank to be pickled.
         """
         AbstractTreebank.__init__(self)
-        self.filename = filename
-        self.path = path = os.path.join(util.get_obj_basedir(), filename)
 
-        if not os.access(path, os.R_OK):
-            print 'Saving treebank {0}...'.format(filename)
-            # http://nltk.googlecode.com/svn/trunk/doc/api/nltk.corpus.reader.util.PickleCorpusView-class.html
-            PickleCorpusView.write(parsed_sents, path)
-            #saver = util.ObjectSaver(filename)
-            #for t in tb.parsed_sents():
-            #    saver.save_obj(t)
-            #saver.close()
+        basedir = util.get_obj_basedir()
+        self.parsed_sents_seq = parsed_sents_seq = {}
 
-        self.parsed_sents_seq = PickleCorpusView(path)
+        if hasattr(tb, 'train_fileids'):
+            self.default_fileids = self.train_fileids = 'train'
+            train_path = os.path.join(basedir, filename+'.train')
+            if not os.access(train_path, os.R_OK):
+                print 'Saving treebank {0}...'.format(filename+'.train')
+                # http://nltk.googlecode.com/svn/trunk/doc/api/nltk.corpus.reader.util.PickleCorpusView-class.html
+                PickleCorpusView.write(tb.parsed_sents(tb.train_fileids), train_path)
+            parsed_sents_seq[self.train_fileids] = PickleCorpusView(train_path)
 
-    def sents(self):
+        if hasattr(tb, 'test_fileids'):
+            self.test_fileids = 'test'
+            test_path = os.path.join(basedir, filename+'.test')
+            if not os.access(test_path, os.R_OK):
+                print 'Saving treebank {0}...'.format(filename+'.test')
+                # http://nltk.googlecode.com/svn/trunk/doc/api/nltk.corpus.reader.util.PickleCorpusView-class.html
+                PickleCorpusView.write(tb.parsed_sents(tb.test_fileids), test_path)
+            parsed_sents_seq[self.test_fileids] = PickleCorpusView(test_path)
+
+        if parsed_sents_seq == {}:
+            self.default_fileids = 'default'
+            path = os.path.join(basedir, filename)
+            if not os.access(path, os.R_OK):
+                print 'Saving treebank {0}...'.format(filename)
+                # http://nltk.googlecode.com/svn/trunk/doc/api/nltk.corpus.reader.util.PickleCorpusView-class.html
+                PickleCorpusView.write(tb.parsed_sents(), path)
+            parsed_sents_seq[self.default_fileids] = PickleCorpusView(path)
+    
+    def sents(self, fileids=None):
         # LazyMap from nltk.util:
-        return LazyMap(lambda t: t.leaves(), self.parsed_sents())
+        return LazyMap(lambda t: t.leaves(), self.parsed_sents(fileids))
 
-    def tagged_sents(self):
+    def tagged_sents(self, fileids=None):
         # LazyMap from nltk.util:
-        return LazyMap(lambda t: t.pos(),  self.parsed_sents())
+        return LazyMap(lambda t: t.pos(),  self.parsed_sents(fileids))
 
-    def parsed_sents(self):
-        return self.parsed_sents_seq
+    def parsed_sents(self, fileids=None):
+        if fileids is None:
+            fileids = self.default_fileids
+        return self.parsed_sents_seq[fileids]
 
 
 class SavedTreebank(Treebank):

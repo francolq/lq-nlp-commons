@@ -20,6 +20,9 @@ class DepGraph(dependencygraph.DependencyGraph):
         self.nodelist = nltk_depgraph.nodelist
         self.root = nltk_depgraph.root
         self.stream = nltk_depgraph.stream
+
+    def leaves(self):
+        return [node['word'] for node in self.nodelist[1:]]
     
     def pos(self):
         return [(node['word'], node['tag']) for node in self.nodelist[1:]]
