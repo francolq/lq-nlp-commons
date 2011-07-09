@@ -20,6 +20,7 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
     files = ['ptb.train', 'ptb.val', 'ptb.test']
     train_fileids = 'ptb.train'
     test_fileids = 'ptb.val'
+    valid_tags = wsj.word_tags + wsj.currency_tags_words
 
     def __init__(self):
         dependency.DependencyCorpusReader.__init__(self, self.root, self.files)
@@ -47,7 +48,7 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
             new_nodelist = [nodelist[0]]
             i = 1
             for node_dict in nodelist[1:]:
-                if node_dict['tag'] in wsj.word_tags:
+                if node_dict['tag'] in self.valid_tags:
                     new_nodelist += [node_dict]
                     node_dict['address'] = i
                     i += 1
@@ -73,6 +74,13 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
             return t
         return LazyMap(f, dependency.DependencyCorpusReader.parsed_sents(self, fileids))
         
+    def write_deps(self, filename, fileids=None):
+        """Writes the dependencies to a text file, one sentence per line.
+        """
+        f = open(filename, 'w')
+        for t in self.parsed_sents(fileids):
+            f.write(' '.join(str(d[1]) for d in t.depset.deps)+'\n')
+        f.close()
 
 
 class DepWSJ(wsj.WSJSents):
@@ -85,10 +93,10 @@ class DepWSJ(wsj.WSJSents):
         return LazyMap(f, wsj.WSJSents.parsed_sents(self, fileids))
 
     def write_deps(self, filename, fileids=None):
-        """Writes the dependencies in a text file, one by line.
+        """Writes the dependencies to a text file, one sentence per line.
         """
         f = open(filename, 'w')
-        for t in self.parsed_sents():
+        for t in self.parsed_sents(fileids):
             f.write(' '.join(str(d[1]) for d in t.depset.deps)+'\n')
         f.close()
 
