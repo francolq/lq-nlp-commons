@@ -362,8 +362,21 @@ class AbstractTreebank:
         """Writes the sentences in a text file, one by line.
         """
         f = open(filename, 'w')
-        for s in self.sents():
+        for s in self.sents(fileids):
             f.write(' '.join(s)+'\n')
+        f.close()
+
+    def write_tagged_sents(self, filename, fileids=None, format=None):
+        """Writes the sentences in a text file, one by line.
+
+        @param format: format string for the pairs (word, tag). use '{0}' for
+        the word and '{1}' for the tag.
+        """
+        if format is None:
+            format = '({0}, {1})'
+        f = open(filename, 'w')
+        for s in self.tagged_sents(fileids):
+            f.write(' '.join(format.format(w, t) for w, t in s)+'\n')
         f.close()
 
 
