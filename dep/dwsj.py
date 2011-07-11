@@ -37,7 +37,7 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
         #if self.only_pos:
         #    f = lambda s: [(x[1], x[1]) for x in filter(lambda x: x[1] in word_tags, s)]
         #else:
-        f = lambda s: filter(lambda x: x[1] in wsj.word_tags, s)
+        f = lambda s: filter(lambda x: x[1] in self.valid_tags, s)
         return LazyMap(f, dependency.DependencyCorpusReader.tagged_sents(self, fileids))
 
     def parsed_sents(self, fileids=None):
