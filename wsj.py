@@ -88,6 +88,9 @@ class WSJSents(bracket_parse.BracketParseCorpusReader, treebank.AbstractTreebank
 
     def only_pos_mode(self, value=True):
         self.only_pos = value
+    
+    def is_punctuation_tag(self, t):
+        return t in punctuation_tags
 
 
 # TODO: remove this class and rename WSJSents to WSJ.
@@ -162,6 +165,9 @@ class WSJ(treebank.SavedTreebank):
     
     def is_punctuation(self, s):
         return is_punctuation(s)
+
+    def is_punctuation_tag(self, t):
+        return t in punctuation_tags
 
 
 def test():

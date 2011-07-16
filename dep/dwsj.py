@@ -25,7 +25,7 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
     def __init__(self):
         dependency.DependencyCorpusReader.__init__(self, self.root, self.files)
 
-    def sents(self, fileids=None):
+    """def sents(self, fileids=None):
         f = lambda s: map(lambda x: x[0], s)
         return LazyMap(f, self.tagged_sents(fileids))
 
@@ -64,7 +64,20 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
             t.depset = depset.from_depgraph(t)
 
             return t
+        return LazyMap(f, dependency.DependencyCorpusReader.parsed_sents(self, fileids))"""
+
+    def parsed_sents(self, fileids=None):
+        def f(t):
+            # wrap into depgraph.DepGraph:
+            t = depgraph.DepGraph(t)
+            # attach depset:
+            t.depset = depset.from_depgraph(t)
+            return t
+
         return LazyMap(f, dependency.DependencyCorpusReader.parsed_sents(self, fileids))
+
+    def is_punctuation_tag(self, t):
+        return t in wsj.punctuation_tags
         
     def write_deps(self, filename, fileids=None):
         """Writes the dependencies to a text file, one sentence per line.
