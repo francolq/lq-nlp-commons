@@ -26,23 +26,15 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
         dependency.DependencyCorpusReader.__init__(self, self.root, self.files)
 
     def sents(self, fileids=None):
-        #if self.only_pos:
-        #    f = lambda s: map(lambda x: x[1], s)
-        #else:
         f = lambda s: map(lambda x: x[0], s)
         return LazyMap(f, self.tagged_sents(fileids))
 
     def tagged_sents(self, fileids=None):
-        # Remove punctuation, ellipsis and currency ($, #) at the same time:
-        #if self.only_pos:
-        #    f = lambda s: [(x[1], x[1]) for x in filter(lambda x: x[1] in word_tags, s)]
-        #else:
         f = lambda s: filter(lambda x: x[1] in self.valid_tags, s)
         return LazyMap(f, dependency.DependencyCorpusReader.tagged_sents(self, fileids))
 
     def parsed_sents(self, fileids=None):
         def f(t):
-            # discard punctuation and currency:
             # XXX: use depgraph.DepGraph.remove_leaves()?
             nodelist = t.nodelist
             new_nodelist = [nodelist[0]]

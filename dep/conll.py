@@ -50,7 +50,8 @@ class CoNLLTreebank(treebank.Treebank):
     
     @staticmethod
     def is_punctuation(n):
-        # n['tag'] is the fifth column.
+        """Override in subclasses.
+        """
         return False
 
 
