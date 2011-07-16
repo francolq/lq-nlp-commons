@@ -21,58 +21,65 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
     train_fileids = 'ptb.train'
     test_fileids = 'ptb.val'
     valid_tags = wsj.word_tags + wsj.currency_tags_words
+    remove_punct = False
 
     def __init__(self):
         dependency.DependencyCorpusReader.__init__(self, self.root, self.files)
 
-    """def sents(self, fileids=None):
-        f = lambda s: map(lambda x: x[0], s)
-        return LazyMap(f, self.tagged_sents(fileids))
+    def sents(self, fileids=None):
+        if self.remove_punct:
+            f = lambda s: map(lambda x: x[0], s)
+            return LazyMap(f, self.tagged_sents(fileids))
+        else:
+            return dependency.DependencyCorpusReader.sents(self, fileids)
 
     def tagged_sents(self, fileids=None):
-        f = lambda s: filter(lambda x: x[1] in self.valid_tags, s)
-        return LazyMap(f, dependency.DependencyCorpusReader.tagged_sents(self, fileids))
+        if self.remove_punct:
+            f = lambda s: filter(lambda x: x[1] in self.valid_tags, s)
+            return LazyMap(f, dependency.DependencyCorpusReader.tagged_sents(self, fileids))
+        else:
+            return dependency.DependencyCorpusReader.tagged_sents(self, fileids)
 
     def parsed_sents(self, fileids=None):
-        def f(t):
-            # XXX: use depgraph.DepGraph.remove_leaves()?
-            nodelist = t.nodelist
-            new_nodelist = [nodelist[0]]
-            i = 1
-            for node_dict in nodelist[1:]:
-                if node_dict['tag'] in self.valid_tags:
-                    new_nodelist += [node_dict]
-                    node_dict['address'] = i
-                    i += 1
-                else:
-                    node_dict['address'] = -1
-            for node_dict in new_nodelist:
-                if 'head' in node_dict:
-                    node_dict['head'] = nodelist[node_dict['head']]['address']
-                deps = node_dict['deps']
-                node_dict['deps'] = []
-                for d in deps:
-                    i = nodelist[d]['address']
-                    if i != -1:
-                        node_dict['deps'] += [i]
-            t.nodelist = new_nodelist
+        if self.remove_punct:
+            def f(t):
+                # XXX: use depgraph.DepGraph.remove_leaves()?
+                nodelist = t.nodelist
+                new_nodelist = [nodelist[0]]
+                i = 1
+                for node_dict in nodelist[1:]:
+                    #if node_dict['tag'] in self.valid_tags:
+                    if not self.is_punctuation_tag(node_dict['tag']):
+                        new_nodelist += [node_dict]
+                        node_dict['address'] = i
+                        i += 1
+                    else:
+                        node_dict['address'] = -1
+                for node_dict in new_nodelist:
+                    if 'head' in node_dict:
+                        node_dict['head'] = nodelist[node_dict['head']]['address']
+                    deps = node_dict['deps']
+                    node_dict['deps'] = []
+                    for d in deps:
+                        i = nodelist[d]['address']
+                        if i != -1:
+                            node_dict['deps'] += [i]
+                t.nodelist = new_nodelist
 
-            # wrap into depgraph.DepGraph:
-            t = depgraph.DepGraph(t)
+                # wrap into depgraph.DepGraph:
+                t = depgraph.DepGraph(t)
 
-            # attach depset:
-            t.depset = depset.from_depgraph(t)
+                # attach depset:
+                t.depset = depset.from_depgraph(t)
 
-            return t
-        return LazyMap(f, dependency.DependencyCorpusReader.parsed_sents(self, fileids))"""
-
-    def parsed_sents(self, fileids=None):
-        def f(t):
-            # wrap into depgraph.DepGraph:
-            t = depgraph.DepGraph(t)
-            # attach depset:
-            t.depset = depset.from_depgraph(t)
-            return t
+                return t
+        else:
+            def f(t):
+                # wrap into depgraph.DepGraph:
+                t = depgraph.DepGraph(t)
+                # attach depset:
+                t.depset = depset.from_depgraph(t)
+                return t
 
         return LazyMap(f, dependency.DependencyCorpusReader.parsed_sents(self, fileids))
 
