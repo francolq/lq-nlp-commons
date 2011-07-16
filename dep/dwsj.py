@@ -18,8 +18,8 @@ from dep import depgraph
 class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
     root = 'ptb'
     files = ['ptb.train', 'ptb.val', 'ptb.test']
-    train_fileids = 'ptb.train'
-    test_fileids = 'ptb.val'
+    train_fileids = files[0]
+    test_fileids = files[1]
     valid_tags = wsj.word_tags + wsj.currency_tags_words
     remove_punct = False
 
@@ -35,7 +35,8 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
 
     def tagged_sents(self, fileids=None):
         if self.remove_punct:
-            f = lambda s: filter(lambda x: x[1] in self.valid_tags, s)
+            #f = lambda s: filter(lambda x: x[1] in self.valid_tags, s)
+            f = lambda s: filter(lambda x: not self.is_punctuation_tag(x[1]), s)
             return LazyMap(f, dependency.DependencyCorpusReader.tagged_sents(self, fileids))
         else:
             return dependency.DependencyCorpusReader.tagged_sents(self, fileids)
@@ -93,6 +94,12 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
         for t in self.parsed_sents(fileids):
             f.write(' '.join(str(d[1]) for d in t.depset.deps)+'\n')
         f.close()
+
+
+class TaggedDWSJ(DWSJ):
+    files = ['ptb.train40k.xtagged40k-10', 'ptb.val.tagged40k', 'ptb.test.tagged40k']
+    train_fileids = files[0]
+    test_fileids = files[1]
 
 
 class DepWSJ(wsj.WSJSents):
