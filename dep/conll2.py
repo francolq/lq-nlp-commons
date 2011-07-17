@@ -129,7 +129,7 @@ class Swedish(CoNLL):
         CoNLL.__init__(self, self.root, self.files)
 
     def is_punctuation_tag(self, t):
-        return t == 'IP'
+        return t.startswith('I')
 
 
 class Slovene(CoNLL):
@@ -157,5 +157,4 @@ class Turkish(CoNLL):
         CoNLL.__init__(self, self.root, self.files)
 
     def is_punctuation_tag(self, t):
-        #return t == 'Punc'
-        return False
+        return t == 'Punc'
