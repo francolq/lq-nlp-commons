@@ -129,7 +129,7 @@ class Swedish(CoNLL):
         CoNLL.__init__(self, self.root, self.files)
 
     def is_punctuation_tag(self, t):
-        return t.startswith('I')
+        return t.startswith('I') and t not in ['ID', 'IM']
 
 
 class Slovene(CoNLL):

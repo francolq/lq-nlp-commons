@@ -102,6 +102,12 @@ class TaggedDWSJ(DWSJ):
     test_fileids = files[1]
 
 
+class ToyDWSJ(DWSJ):
+    files = ['toy.train', 'toy.val']
+    train_fileids = files[0]
+    test_fileids = files[1]
+
+
 class DepWSJ(wsj.WSJSents):
     
     def parsed_sents(self, fileids=None):
