@@ -23,7 +23,12 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
     valid_tags = wsj.word_tags + wsj.currency_tags_words
     remove_punct = False
 
-    def __init__(self):
+    def __init__(self, filename=None):
+        if filename:
+            self.root = ''
+            self.files = filename
+            self.train_fileids = filename
+            self.test_fileids = filename
         dependency.DependencyCorpusReader.__init__(self, self.root, self.files)
 
     def sents(self, fileids=None):
