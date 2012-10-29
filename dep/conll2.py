@@ -10,8 +10,11 @@ import treebank
 
 class CoNLL(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
 
-    def __init__(self, root, files):
-        dependency.DependencyCorpusReader.__init__(self, nltk.data.find('corpora/conll06/data/'+root), files)
+    def __init__(self, root, files, nltk_data=True):
+        if nltk_data:
+            dependency.DependencyCorpusReader.__init__(self, nltk.data.find('corpora/conll06/data/'+root), files)
+        else:
+            dependency.DependencyCorpusReader.__init__(self, root, files)
 
     """def sents(self, fileids=None):
         f = lambda s: map(lambda x: x[0], s)
