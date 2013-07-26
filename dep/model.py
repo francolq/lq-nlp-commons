@@ -153,7 +153,7 @@ class ProjDepModel(DepModel):
         self.S = S
         # Extract gold as DepSets:
         # FIXME: call super and do this there.
-        self.Gold = [t.depset for t in treebank.parsed_sents()]
+        #self.Gold = [t.depset for t in treebank.parsed_sents()]
         
         # Extract gold as Bracketings:
         self.bracketing_model = model.BracketingModel(treebank)
@@ -168,14 +168,14 @@ class ProjDepModel(DepModel):
         #dmvccm.DMVCCM.eval(self, output, short, long, max_length)
         self.bracketing_model.eval(output, short, long, max_length)
         
-        # Ahora eval de dependencias:
+        """# Ahora eval de dependencias:
         self.DepParse = self.Parse
         # type no anda porque devuelve instance:
         #self.Parse = [type(self).tree_to_depset(t) for t in self.DepParse]
         self.Parse = [self.__class__.tree_to_depset(t) for t in self.DepParse]
         #model.DepModel.eval(self, output, short, long, max_length)
         DepModel.eval(self, output, short, long, max_length)
-        self.Parse = self.DepParse
+        self.Parse = self.DepParse"""
     
     def eval_stats(self, output=True, max_length=None):
         # Ahora eval de dependencias:

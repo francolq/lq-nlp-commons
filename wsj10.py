@@ -9,19 +9,19 @@ from nltk.util import LazyMap
 import wsj
 
 
-class WSJn(wsj.WSJ):
+class WSJn(wsj.SavedWSJ):
     """Sentences of length <= n after removal of punctuation, ellipsis and
     currency.
     To be replaced by the WSJnLex class soon.
     """
 
     def __init__(self, n, basedir=None, load=True):
-        wsj.WSJ.__init__(self, basedir)
+        wsj.SavedWSJ.__init__(self, basedir)
         self.n = n
         self.filename = 'wsj%02i.treebank' % n
         if load:
             self.get_trees()
-    
+
     def _generate_trees(self):
         print "Parsing treebank..."
         f = lambda t: len(t.leaves()) <= self.n
@@ -34,7 +34,7 @@ class WSJn(wsj.WSJ):
         # Remove punctuation, ellipsis and currency ($, #) at the same time:
         t.filter_leaves(lambda x: x in wsj.word_tags)
         return t
-    
+
     def tagged_sents(self):
         # LazyMap from nltk.util:
         f = lambda t: [(x,x) for x in t.leaves()]
@@ -42,18 +42,18 @@ class WSJn(wsj.WSJ):
 
 
 class WSJ10(WSJn):
-   
+
     def __init__(self, basedir=None, load=True):
         WSJn.__init__(self, 10, basedir, load)
 
 
 class WSJ40(WSJn):
-   
+
     def __init__(self, basedir=None, load=True):
         WSJn.__init__(self, 40, basedir, load)
 
 
-class WSJ10P(wsj.WSJ):
+class WSJ10P(wsj.SavedWSJ):
     """The 7422 sentences of the WSJ10 treebank but including punctuation.
     """
     # antes era puntuacion pero sin el punto final
@@ -64,22 +64,22 @@ class WSJ10P(wsj.WSJ):
     punctuation_tags = wsj.punctuation_tags
     stop_punctuation_tags = [',', '.', ':']
     bracket_punctuation_tag_pairs = [('-LRB-', '-RRB-'), ('``', '\'\'')]
-    
+
     def __init__(self, basedir=None, load=True):
         n = 10
-        wsj.WSJ.__init__(self, basedir)
+        wsj.SavedWSJ.__init__(self, basedir)
         self.n = n
         self.filename = 'wsj%02ip.treebank' % n
         if load:
             self.get_trees()
-   
+
     def _generate_trees(self):
         print "Parsing treebank..."
         f = lambda t: len(filter(lambda x: x not in self.punctuation_tags, t.leaves())) <= self.n
         m = lambda t: self._prepare(t)
         trees = [t for t in itertools.ifilter(f, itertools.imap(m, self.parsed()))]
         return trees
-   
+
     def _prepare(self, t):
         t.remove_leaves()
         # Con esto elimino ellipsis y $ y # (currency) al mismo tiempo:
@@ -87,25 +87,25 @@ class WSJ10P(wsj.WSJ):
         return t
 
 
-class WSJnLex(wsj.WSJ):
+class WSJnLex(wsj.SavedWSJ):
     """Lexicalized WSJn. Sentences of length <= n after removal of punctuation,
     ellipsis and currency. Will replace the WSJn class soon.
     """
-    
+
     def __init__(self, n, basedir=None, load=True):
-        wsj.WSJ.__init__(self, basedir)
+        wsj.SavedWSJ.__init__(self, basedir)
         self.n = n
         self.filename = 'wsj%02i.lex_treebank' % n
         if load:
             self.get_trees()
-    
+
     def _generate_trees(self):
         print "Parsing treebank..."
         f = lambda t: len(t.leaves()) <= self.n
         m = lambda t: self._prepare(t)
         trees = [t for t in itertools.ifilter(f, itertools.imap(m, self.parsed()))]
         return trees
-    
+
     def _prepare(self, t):
         # only keep word tags (removes punctuation, ellipsis and currency)
         t.filter_subtrees(lambda t: type(t) == str or len([x for x in t.pos() if x[1] in wsj.word_tags]) > 0)
@@ -113,7 +113,7 @@ class WSJnLex(wsj.WSJ):
 
 
 class WSJ10Lex(WSJnLex):
-    
+
     def __init__(self, basedir=None, load=True):
         WSJnLex.__init__(self, 10, basedir, load)
 
@@ -121,9 +121,10 @@ class WSJ10Lex(WSJnLex):
 class WSJnTagged(WSJn):
     """WSJ tagged with an unsupervised tagger.
     """
-    
+
     def __init__(self, n, basedir=None, load=True):
-        wsj.WSJ.__init__(self, basedir)
+        #wsj.WSJ.__init__(self, basedir)
+        WSJn.__init__(self, basedir)
         self.n = n
         self.filename = 'wsj%02i.tagged_treebank' % n
         self.tagger = WSJTagger()

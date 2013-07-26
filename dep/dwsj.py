@@ -91,7 +91,7 @@ class DWSJ(treebank.AbstractTreebank, dependency.DependencyCorpusReader):
 
     def is_punctuation_tag(self, t):
         return t in wsj.punctuation_tags
-        
+
     def write_deps(self, filename, fileids=None):
         """Writes the dependencies to a text file, one sentence per line.
         """
@@ -113,14 +113,14 @@ class ToyDWSJ(DWSJ):
     test_fileids = files[1]
 
 
-class DepWSJ(wsj.WSJSents):
-    
+class DepWSJ(wsj.WSJ):
+
     def parsed_sents(self, fileids=None):
         def f(t):
             find_heads(t, label=False)
             t.depset = tree_to_depset(t)
             return t
-        return LazyMap(f, wsj.WSJSents.parsed_sents(self, fileids))
+        return LazyMap(f, wsj.WSJ.parsed_sents(self, fileids))
 
     def write_deps(self, filename, fileids=None):
         """Writes the dependencies to a text file, one sentence per line.
@@ -132,7 +132,7 @@ class DepWSJ(wsj.WSJSents):
 
 
 class DepWSJn(wsj10.WSJnLex):
-    
+
     def __init__(self, max_length, basedir=None, load=True):
         wsj10.WSJnLex.__init__(self, max_length, basedir, load=False)
         self.filename = 'dwsj%02i.treebank' % max_length
@@ -149,7 +149,7 @@ class DepWSJn(wsj10.WSJnLex):
 
 
 class DepWSJ10(DepWSJn):
-    
+
     def __init__(self, basedir=None, load=True):
         DepWSJn.__init__(self, 10, basedir, load)
 

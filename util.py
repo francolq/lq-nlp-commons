@@ -55,6 +55,10 @@ def get_obj_basedir():
     try:
         return nltk.data.find(obj_basedir)
     except LookupError:
+        try:
+            nltk.data.find('')
+        except LookupError:
+            os.mkdir(nltk.data.path[0])
         os.mkdir(os.path.join(nltk.data.path[0], obj_basedir))
         return nltk.data.find(obj_basedir)
 

@@ -106,6 +106,7 @@ def eval_label(label, goldtb, parse):
     
     return (Rec, bad)
 
+
 # Conj. de brackets que estan en b1 pero no en b2
 # los devuelve con indices comenzando del 0.
 def difference(b1, b2):
@@ -114,4 +115,116 @@ def difference(b1, b2):
     return s1 - s2
 
 
+class Tester:
+    #count_length_2 = True
+    #count_length_2_1 = False
+    ignore_punct = True
+
+    def __init__(self, parser, tb):
+        """
+        @param parser: An object that has a method parser.parse(s) where s is
+        a POS tagged sentence (a list with elements of the form (word, tag)).
+        """
+        self.parser = parser
+        #if tb == None:
+        #    tb = dwsj.DepWSJ10()
+        self.tb = tb
+        #if hasattr(tb, 'test_fileids'):
+        self.fileids = tb.test_fileids
+        #else:
+        #    self.fileids = None
+
+    def eval(self, output=True, short=False, long=False, max_length=None):
+        #Gold = self.Gold
+        self.Parse = []
+        self.Times = []
+        self.TimesTable = {}
+        self.Count = 0
+        self.Directed = 0.0
+        self.Undirected = 0.0
+
+        i = 0
+        #p = util.Progress('Parsed', 0, -1000000)
+        out = 'Parsed {0}. Partial results: DA=??.? UA=??.?'.format(i)
+        print out,
+        sys.stdout.flush()
+        outl = len(out)+1
+        tb = self.tb
+        fileids = self.fileids
+        #for t, s in zip(tb.parsed_sents(fileids), tb.tagged_sents(fileids)):
+        for t in tb.parsed_sents(fileids):
+            s = t.pos()
+            l = len(s)
+            #if (max_length is None or l <= max_length) \
+            #        and (self.count_length_2_1 or (self.count_length_2 and l == 2) or l >= 3):
+            (count, directed, undirected) = self.measures(t, s)
+            self.Count += count
+            self.Directed += directed
+            self.Undirected += undirected
+            #else:
+            #    self.Parse += [None]
+            #    self.Times += [None]
+            i += 1
+            #p.next()
+            if self.Count == 0:
+                out = 'Parsed {0}. Partial results: DA=??.? UA=??.?'.format(i)
+            else:
+                out = 'Parsed {0}. Partial results: DA={1:2.2f} UA={2:2.2f}'.format(i, 100*self.Directed/self.Count, 100*self.Undirected/self.Count)
+            print ('\b'*outl)+out,
+            sys.stdout.flush()
+            outl = len(out)+1
+
+        Directed = self.Directed / self.Count
+        Undirected = self.Undirected / self.Count
+
+        if output and not short:
+            print ''
+            #print '  Directed Accuracy: {0:2.2f}'.format(100*Directed)
+            #print '  Undirected Accuracy: {0:2.2f}'.format(100*Undirected)
+            print 'Unlabeled attachment score: {0} / {1} * 100 = {2:2.2f} %'.format(int(self.Directed), self.Count, 100*Directed)
+        elif output and short:
+            print "L =", Directed, "UL =", Undirected
+
+    def measures(self, t, s):
+        #g, p = self.Gold[i].deps, self.Parse[i].deps
+        #g, p = t.depset.deps, self.parser.parse(t.leaves())
+        g = t.depset.deps
+        n = t.depset.length
+        t0 = time.clock()
+        p = self.parser.parse(s)
+        t1 = time.clock()
+        self.Times += [t1 - t0]
+        self.TimesTable[n] = self.TimesTable.get(n, []) + [t1 - t0]
+        self.Parse += [p]
+
+        if self.ignore_punct:
+            g = [d for w, d in zip(s, g) if not self.tb.is_punctuation_tag(w[1])]
+            p = [d for w, d in zip(s, p) if not self.tb.is_punctuation_tag(w[1])]
+            n = len(g)
+
+        d, u = 0, 0
+        for (a, b) in g:
+            b1 = (a, b) in p
+            b2 = (b, a) in p
+            if b1:
+                d += 1
+            if b1 or b2:
+                u += 1
+
+        return (n, d, u)
+
+    def print_time_stats(self):
+        print 'Length'.ljust(20)+'Count'.ljust(20)+'Avg. time (sec.)'.ljust(20)
+        #+'Variance'.ljust(20)
+        table = self.TimesTable
+        keys = table.keys()
+        m, n = min(keys), max(keys)+1
+        for i in range(m, n):
+            times = table.get(i, [])
+            if times:
+                count = len(times)
+                avg = sum(times) / len(times)
+                print '{0}'.format(i).ljust(20)+'{0}'.format(count).ljust(20)+'{0}'.format(avg).ljust(20)
+            else:
+                print '{0}'.format(i).ljust(20)+'N/D'
     
